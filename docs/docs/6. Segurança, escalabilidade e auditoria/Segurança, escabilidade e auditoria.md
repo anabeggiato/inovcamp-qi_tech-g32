@@ -1,92 +1,79 @@
 ---
-title: Segurança, escalabilidade e auditoria
+title: Segurança, Escalabilidade e Auditoria
 sidebar_position: 6
 ---
-# Documentação - Segurança, Escalabilidade e Auditoria (Hackathon QI Tech)
+
+# Segurança, Escalabilidade e Auditoria – QI-EDU
 
 ## 1. Introdução
 
-O sistema proposto busca demonstrar que é possível construir uma **plataforma financeira digital** com foco em **automação (RPA)**, mas sem abrir mão dos pilares de qualidade que garantem a confiança de clientes e parceiros: **segurança, escalabilidade e auditoria**.  
-Cada uma dessas dimensões foi considerada desde o início do design da solução.
+No QI-EDU, cada módulo foi pensado não apenas para funcionar, mas para demonstrar **robustez e confiabilidade** em um ambiente de empréstimo P2P educacional.  
+Segurança, escalabilidade e auditoria são evidenciadas pelo design, mostrando que o MVP é mais que protótipo: é uma plataforma replicável e auditável.
 
 ---
 
 ## 2. Segurança
 
-A segurança é essencial em sistemas financeiros. Nosso design garante proteção em três níveis: **acesso**, **dados** e **processos de negócio**.
+A segurança não é apenas técnica; ela está incorporada ao fluxo de dados e ao modelo de negócio.
 
-- **Autenticação e Autorização:** uso de JWT para sessões seguras e rate limiting em endpoints críticos.  
-- **Proteção de Dados:** senhas com hash seguro (bcrypt/argon2), comunicações em HTTPS e restrição de acesso a dados sensíveis.  
-- **Validação:** inputs são sanitizados contra SQL Injection e XSS.  
-- **Antifraude:** integra diretamente com a tabela `frauds`, registrando sinais como OTP falhado, IP suspeito e e-mail descartável.
+- **Autenticação e Autorização:** JWTs com rate limiting garantem que apenas usuários validados possam criar empréstimos, acessar saldo ou aprovar repasses, demonstrando controle de acesso confiável.
+- **Proteção de Dados:** senhas nunca armazenadas em texto e comunicação TLS mostram cuidado com dados sensíveis, como se cada linha de código fosse uma política de compliance.
+- **Validação de Inputs:** checks nos JSONs do contrato, payload antifraude e metadados previnem inconsistências no ledger, evidenciando atenção à integridade financeira.
+- **Antifraude integrado:** qualquer sinal crítico (OTP falhado, IP suspeito, aluno trancando curso) atualiza `fraud_score` e pode bloquear repasses, mostrando controle proativo sobre risco real.
 
-**Justificativa:** medidas simples e consagradas permitem mostrar maturidade técnica sem sobrecarregar o MVP.  
-Equilibramos rapidez de execução e segurança realista.
-
-### Tabela Resumo
-
-| Medida | Descrição |
-|--------|-----------|
-| **Autenticação & Autorização** | JWT para sessões seguras, rate limiting em endpoints críticos. |
-| **Proteção de Dados** | HTTPS, hash de senhas (bcrypt/argon2), restrição de acesso a dados sensíveis. |
-| **Validação & Prevenção** | Sanitização de inputs, logs estruturados para detecção de ataques. |
-| **Antifraude** | Registro em `frauds`, cálculo de `fraud_score` e bloqueio/revisão de suspeitos. |
+| Medida                     | Evidência de valor                                                      |
+| -------------------------- | ----------------------------------------------------------------------- |
+| Autenticação & Autorização | Evita uso indevido da plataforma sem atrapalhar o fluxo de empréstimos. |
+| Proteção de Dados          | Transparência para investidores: dados críticos não vazam.              |
+| Validação & Prevenção      | Ledger mantém consistência mesmo em inputs inválidos ou maliciosos.     |
+| Antifraude                 | Riscos de inadimplência e fraude detectados automaticamente.            |
 
 ---
 
 ## 3. Escalabilidade
 
-Mesmo sendo um MVP de hackathon, projetamos a solução pensando em crescimento.
+Projetado para crescer sem comprometer integridade ou performance.
 
-- **Arquitetura Modular:** módulos independentes que podem virar microserviços no futuro.  
-- **Banco de Dados:** PostgreSQL único no MVP, mas com schema preparado para particionamento/replicação.  
-- **Jobs RPA:** processos recorrentes (score, fraude, cobrança) rodam como jobs independentes, já escaláveis horizontalmente.  
-- **Cache/Filas:** Redis para sessões e rate limit; filas (RabbitMQ/Kafka) para lidar com notificações e matching em escala.  
-- **Cloud Ready:** containers Docker facilmente implantáveis em Kubernetes.
+- **Arquitetura Modular:** cada módulo (loans, offers, ledger, scores) opera isoladamente; facilita expansão para novos cursos ou integração com fintechs.
+- **Banco de Dados:** PostgreSQL com JSONB permite flexibilidade em contratos e payloads, pronto para replicação ou particionamento quando o volume de usuários aumentar.
+- **Jobs RPA:** cálculo de score e verificação antifraude executam em paralelo, sem atrasar matching ou desembolso.
+- **Cache e Filas:** Redis e mensageria isolam picos de matching e notificações, mostrando como o sistema aguenta carga maior sem travar a experiência do aluno.
+- **Containers e Cloud Ready:** Docker garante consistência entre ambientes e facilita scaling horizontal, permitindo que protótipo se comporte como produto real.
 
-**Justificativa:** o MVP funciona em um servidor simples, mas a modularidade garante que o crescimento não exige reescrever o sistema, apenas extrair serviços.  
-Isso mostra visão de longo prazo sem perder simplicidade.
-
-### Tabela Resumo
-
-| Medida | Descrição |
-|--------|-----------|
-| **Arquitetura Modular** | Módulos independentes que podem virar microserviços. |
-| **Banco de Dados** | PostgreSQL central, com possibilidade de particionamento/replicação. |
-| **Jobs RPA** | Executados em paralelo, escaláveis horizontalmente. |
-| **Cache/Filas** | Redis para sessões/rate limit; mensageria para notificações/matching em produção. |
-| **Cloud Ready** | Containers Docker prontos para Kubernetes ou serviços gerenciados. |
+| Medida              | Evidência de valor                                                               |
+| ------------------- | -------------------------------------------------------------------------------- |
+| Arquitetura Modular | Novos produtos ou módulos podem ser adicionados sem alterar fluxo de pagamentos. |
+| Banco de Dados      | Escalabilidade e flexibilidade para contratos e histórico de scores/fraudes.     |
+| Jobs RPA            | Processamento paralelo mantém o sistema responsivo mesmo sob volume alto.        |
+| Cache/Filas         | Matching e notificações funcionam sem bloquear usuários ativos.                  |
+| Cloud Ready         | MVP é facilmente replicável em produção, mostrando visão de longo prazo.         |
 
 ---
 
 ## 4. Auditoria
 
-Confiança é fundamental. Por isso, o sistema precisa ser **transparente e rastreável**.
+Transparência e rastreabilidade demonstram confiabilidade.
 
-- **Ledger de Dupla Entrada:** toda operação financeira gera dois registros (débito e crédito), garantindo consistência.  
-- **Históricos:** tabelas `frauds` e `scores` guardam todos os sinais e cálculos realizados.  
-- **Logs Estruturados:** operações críticas (cadastro, matching, contrato, pagamento) geram logs com referência e metadados.  
-- **Rastreabilidade Completa:** possível reconstruir todo o ciclo de vida de um empréstimo.
+- **Ledger de Dupla Entrada:** cada débito e crédito é registrado, provando que transações podem ser auditadas e reconciliadas.
+- **Históricos completos:** tabelas `frauds` e `scores` preservam todo ciclo de decisão, evidenciando controle sobre risco e score de crédito.
+- **Logs Estruturados:** cada ação crítica gera log com referência a usuário, contrato e operação, mostrando rastreabilidade detalhada.
+- **Migrations e Seeds:** banco pode ser reconstruído do zero em qualquer ambiente, garantindo consistência e reprodutibilidade do MVP.
 
-**Justificativa:** auditoria dá transparência e mostra que a solução pode ser levada a sério.  
-Enquanto outros times focam apenas em prototipar, nós demonstramos preocupação com governança.
-
-### Tabela Resumo
-
-| Medida | Descrição |
-|--------|-----------|
-| **Ledger de Dupla Entrada** | Toda movimentação financeira registrada de forma contábil. |
-| **Históricos** | `frauds` e `scores` guardam todos os sinais e cálculos realizados. |
-| **Logs Estruturados** | Operações críticas registradas com referência e metadados. |
-| **Rastreabilidade Completa** | Permite reconstruir a jornada de usuários e contratos. |
+| Medida                  | Evidência de valor                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| Ledger de Dupla Entrada | Pagamentos e repasses aos investidores podem ser reconciliados facilmente.                  |
+| Históricos              | Score e sinais de fraude podem ser auditados retroativamente.                               |
+| Logs Estruturados       | Disputa ou investigação é suportada por dados completos.                                    |
+| Reprodutibilidade       | Ambiente de teste ou produção pode ser recriado fielmente, demonstrando maturidade técnica. |
 
 ---
 
 ## 5. Conclusão
 
-- **Segurança** protege usuários e dados desde o primeiro acesso.  
-- **Escalabilidade** garante que a solução cresça sem reescrita.  
-- **Auditoria** dá rastreabilidade e confiança, fundamentais em operações financeiras.  
+O QI-EDU evidencia que um **MVP pode ser seguro, escalável e auditável**:
 
-Em conjunto, esses pilares reforçam o valor da solução:  
-**uma plataforma automatizada, segura, escalável e transparente**, alinhada à missão da QI Tech.
+- Segurança se integra ao fluxo de dados e decisões, reduzindo risco de fraude e inadimplência.
+- Escalabilidade permite crescimento do número de alunos e investidores sem reescrever módulos.
+- Auditoria garante rastreabilidade completa de cada empréstimo, pagamento e score.
+
+Cada escolha de design não é apenas funcional: **provoca confiança, facilita expansão e valida a solução frente aos critérios do hackathon**.
