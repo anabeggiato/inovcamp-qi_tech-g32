@@ -3,6 +3,7 @@
 import CardCiclo from "./components/CardCiclo";
 import ForStudentsSection from "./components/ForStudentsSection";
 import ForInvestorSection from "./components/ForInvestorSection";
+import CallToAction from "./components/CallToAction";
 import Header from "./components/Header"
 import Hero from "./components/Hero"
 import {
@@ -50,9 +51,10 @@ export default function Home() {
           <CardCiclo icon={<Shield className="text-white" />} title="Antifraude Avançado" description="Detecção em tempo real de anomalias e proteção contra fraudes."  />
           <CardCiclo icon={<Zap className="text-white" />} title="Matching Inteligente" description="Algoritmo de IA que conecta o perfil ideal de investidor e estudante." />
           <CardCiclo icon={<Lock className="text-white" />} title="Custódia Segura" description="Recursos protegidos até confirmação de matrícula e frequência." />
-          
         </div>
       </section>
+
+      <CallToAction />
     </div>
   )
 }
