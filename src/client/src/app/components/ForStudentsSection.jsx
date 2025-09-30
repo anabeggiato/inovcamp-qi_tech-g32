@@ -20,7 +20,7 @@ export default function ForStudentsSection() {
             </div>
 
             <div className='w-[50%] h-full flex items-start justify-end'>
-                <div class="flex flex-col items-center justify-center w-[90%] bg-white p-6 rounded-xl shadow-[0_0_40px_10px_rgba(147,51,234,0.2)]">
+                <div className="flex flex-col items-center justify-center w-[90%] bg-white p-6 rounded-xl shadow-[0_0_40px_10px_rgba(147,51,234,0.2)]">
                    <div className='flex w-full items-center justify-between bg-success-green/10 p-4 rounded-lg'>
                     <p className='font-bold text-lg'>Score Acadêmico</p>
                     <span className='text-success-green font-bold text-2xl'>A+</span>
