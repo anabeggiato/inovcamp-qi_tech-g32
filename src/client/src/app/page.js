@@ -11,19 +11,15 @@ import {
   Shield,
   Users,
   Zap,
-  GraduationCap,
-  DollarSign,
   BarChart3,
   Lock,
-  CheckCircle2,
-  ArrowRight
 } from "lucide-react";
 import Footer from "./components/Footer";
 
 export default function Home() {
 
   return (
-    <div className="h-screen w-screen bg-background">
+    <div className="min-h-screen w-screen bg-background mt-15">
       <Header />
       <main className="px-64">
         <Hero />

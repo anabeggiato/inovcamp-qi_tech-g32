@@ -3,7 +3,7 @@ import CardHero from './CardHero'
 
 export default function Hero() {
     return (
-        <div className='flex flex-col items-center space-y-8 mt-20 text-center p-8'>
+        <div className='flex flex-col items-center space-y-8 text-center p-8'>
             <div>
                 <h1 className='bg-brand-gradient bg-clip-text text-transparent font-bold text-7xl'>O Futuro do</h1>
                 <h1 className='bg-brand-gradient bg-clip-text text-transparent font-bold text-7xl'>Financiamento Educacional</h1>
