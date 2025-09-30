@@ -2,6 +2,7 @@
 
 import CardCiclo from "./components/CardCiclo";
 import ForStudentsSection from "./components/ForStudentsSection";
+import ForInvestorSection from "./components/ForInvestorSection";
 import Header from "./components/Header"
 import Hero from "./components/Hero"
 import {
@@ -37,11 +38,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/*Seção para estuidantes */}
-      <div>
-        <div className="rounded-full bg-primary/10 text-primary text-center p-2 w-[12%]">Para estudantes</div>
+        
         <ForStudentsSection />
-      </div>
+        <ForInvestorSection />
     </div>
   )
 }
