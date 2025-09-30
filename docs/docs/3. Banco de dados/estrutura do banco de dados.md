@@ -1,5 +1,5 @@
 ---
-title: Estrutura do banco de dados
+title: Estrutura do Banco de Dados
 sidebar_position: 3
 ---
 
@@ -8,104 +8,123 @@ sidebar_position: 3
 ## 1. Decisões de Design
 
 - **Minimalismo:** reduzimos o número de tabelas para simplificar o MVP e acelerar o desenvolvimento.
-- **Snapshots em `users`:** guardamos o score e status antifraude mais recentes no próprio usuário,
-  para consultas rápidas.
-- **Histórico separado:** detalhes ficam em tabelas próprias (`frauds` e `scores`), garantindo
-  rastreabilidade e auditoria.
-- **Ledger de dupla entrada:** toda movimentação financeira (empréstimos, pagamentos, repasses) passa pelo
-  ledger, garantindo consistência contábil e rastreabilidade.
-- **Uso de JSONs:** colunas JSON permitem armazenar informações flexíveis (contratos, parcelas, payloads de fraude),
-  sem precisar criar dezenas de tabelas auxiliares.
+- **Snapshots em `users`:** armazenamos score de crédito e status antifraude mais recentes no próprio usuário para consultas rápidas.
+- **Histórico separado:** detalhes ficam em tabelas próprias (`frauds`, `scores`, `academic_performance`) garantindo rastreabilidade e auditoria.
+- **Ledger de dupla entrada:** toda movimentação financeira (empréstimos, pagamentos, repasses) passa pelo ledger, garantindo consistência contábil.
+- **Uso de JSONB:** colunas JSON permitem armazenar informações flexíveis (contratos, payloads de antifraude, metadados), sem precisar criar dezenas de tabelas auxiliares.
+- **Flexibilidade e prototipagem rápida:** ideal para MVP e hackathons.
 
 ---
 
 ## 2. Vantagens da Estrutura
 
-- **Simplicidade para prototipagem** em um hackathon.
-- **Didática e clareza** para jurados e mentores entenderem.
-- **Escalabilidade:** cada módulo pode virar microserviço ou tabela especializada futuramente.
-- **Transparência:** o ledger garante rastreabilidade financeira.
-- **Flexibilidade:** uso de JSON evita rigidez prematura.
-- **Desacoplamento:** separação clara entre dados de usuários, pedidos/ofertas e eventos (fraudes/scores).
+- **Simplicidade para prototipagem** e rápida evolução do MVP.
+- **Didática e clareza** para mentores e jurados entenderem.
+- **Escalabilidade:** cada módulo pode ser transformado em microserviço ou tabela especializada no futuro.
+- **Transparência:** ledger garante rastreabilidade financeira.
+- **Desacoplamento:** separação clara entre usuários, empréstimos, ofertas, fraudes, scores e movimentações.
+- **Auditoria:** histórico append-only em `frauds`, `scores` e `ledger`.
 
 ---
 
-## 3. Modelagem do Banco de Dados
+## 3. Migrations e Seeds
 
-| Tabela      | Principais Campos                                       | Descrição                                                     |
-| ----------- | ------------------------------------------------------- | ------------------------------------------------------------- |
-| **users**   | nome, cpf, email, fraud_score, credit_score             | Dados cadastrais + snapshots de antifraude e score de crédito |
-| **loans**   | borrower_id, amount, term_months, status, contract_json | Pedidos de empréstimo do tomador                              |
-| **offers**  | investor_id, amount_available, term_months, min_rate    | Ofertas de investimento dos investidores                      |
-| **matches** | loan_id, offer_id, amount_matched, rate                 | Relação entre pedidos e ofertas (fracionamento permitido)     |
-| **ledger**  | account_type, user_id, amount, dc, ref, meta            | Lançamentos de dupla entrada para saldos e pagamentos         |
-| **frauds**  | user_id, type, severity, payload                        | Histórico de sinais antifraude                                |
-| **scores**  | user_id, score, risk_band, reason_json                  | Histórico de cálculos de score de crédito                     |
+### Migrations
+
+- **Função:** versionar e criar/alterar tabelas do banco de forma reproduzível.
+- **Ferramenta usada:** [Knex.js](https://knexjs.org/), permitindo definir migrations em JavaScript.
+- **Fluxo de uso:**
+  1. Criar migration: `npx knex migrate:make create_users_table`
+  2. Rodar todas as migrations: `npx knex migrate:latest --knexfile knexfile.js`
+  3. Cada migration cria ou altera tabelas com controle de versão (coluna `id` autoincrement, constraints, foreign keys).
+
+### Seeds
+
+- **Função:** popular o banco com dados iniciais para testes e demos.
+- **Exemplo:** tabela `users`, `offers` e `loans` recebem registros iniciais de teste.
+- **Comando:** `npx knex seed:run --knexfile knexfile.js`
+- **Benefício:** garante que qualquer desenvolvedor ou ambiente consiga reproduzir dados de teste consistentes.
+
+> Observação: migrations + seeds permitem que o banco seja reconstruído do zero rapidamente, essencial em hackathons e deploys em ambientes diferentes (local, staging, render).
 
 ---
 
-## 4. Fluxo dos Dados
+## 4. Modelagem do Banco de Dados
+
+| Tabela                   | Principais Campos                                                        | Descrição                                                        |
+| ------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| **users**                | id, nome, cpf, email, fraud_score, fraud_status, credit_score, risk_band | Dados cadastrais + snapshots de antifraude e score de crédito    |
+| **loans**                | id, borrower_id, amount, term_months, status, contract_json              | Pedidos de empréstimo do tomador                                 |
+| **offers**               | id, investor_id, amount_available, term_months, min_rate                 | Ofertas de investimento dos investidores                         |
+| **matches**              | id, loan_id, offer_id, amount_matched, rate                              | Relacionamento entre pedidos e ofertas (fracionamento permitido) |
+| **ledger**               | id, account_type, user_id, amount, dc, ref, meta                         | Lançamentos de dupla entrada para saldos e pagamentos            |
+| **frauds**               | id, user_id, type, severity, payload                                     | Histórico de sinais antifraude                                   |
+| **scores**               | id, user_id, score, risk_band, reason_json                               | Histórico de cálculos de score de crédito                        |
+| **academic_performance** | id, user_id, period, grade_avg, attendance_pct, status                   | Histórico acadêmico para cálculo de score                        |
+| **institutions**         | id, name, integration_meta                                               | Informações de instituições de ensino                            |
+
+---
+
+## 5. Fluxo dos Dados
 
 1. **Cadastro/Onboarding:** cria usuário em `users`. OTPs e verificações KYC podem gerar registros em `frauds`.
-2. **Antifraude:** cada sinal é salvo em `frauds`; o snapshot em `users` é atualizado com `fraud_score` e `fraud_status`.
-3. **Score de Crédito:** cada cálculo é salvo em `scores`; o snapshot em `users` é atualizado com `credit_score` e `risk_band`.
-4. **Empréstimos (loans):** tomadores registram pedidos.
-5. **Ofertas (offers):** investidores registram ofertas.
-6. **Matching:** os pedidos são casados com ofertas, registrados em `matches`.
-7. **Ledger:** toda liberação, pagamento e repasse é registrado em dupla entrada.
-8. **Saldos:** são consultados via `VIEW balances`.
+2. **Antifraude:** cada sinal é salvo em `frauds`; snapshot em `users` atualizado (`fraud_score`, `fraud_status`).
+3. **Score de Crédito:** cada cálculo é salvo em `scores`; snapshot em `users` atualizado (`credit_score`, `risk_band`).
+4. **Empréstimos (`loans`):** tomadores registram pedidos de empréstimo.
+5. **Ofertas (`offers`):** investidores registram ofertas de investimento.
+6. **Matching:** pedidos e ofertas são casados, registrados em `matches`.
+7. **Ledger:** toda liberação, pagamento e repasse é registrado em dupla entrada (`ledger`).
+8. **Saldos:** consultados via `VIEW balances` ou funções agregadas.
 
 ---
 
-Usuário (borrower)
-│
-▼
+Usuário (borrower)  
+│  
+▼  
 Cadastro / Onboarding
 
-- Tabela: users
+- Tabela: `users`
 - Inserção de dados básicos
-- Verificação KYC
-  │
-  ▼
+- Verificação KYC  
+  │  
+  ▼  
   Antifraude Automático
-- Tabela: frauds
-- Função: atualiza snapshot em users (fraud_score, fraud_status)
-  │
-  ▼
+- Tabela: `frauds`
+- Atualiza snapshot em `users` (`fraud_score`, `fraud_status`)  
+  │  
+  ▼  
   Score de Crédito
-- Tabela: scores
-- Função: atualiza snapshot em users (credit_score, risk_band)
-  │
-  ▼
-  Empréstimo (Loan)
-- Tabela: loans
-- Usuário cria pedido
-  │
-  ▼
+- Tabela: `scores`
+- Atualiza snapshot em `users` (`credit_score`, `risk_band`)  
+  │  
+  ▼  
+  Empréstimo (`loans`)
+- Usuário cria pedido  
+  │  
+  ▼  
   Matching Automático
-- Tabela: offers / matches
-- Função: match_loan()
-- Conecta empréstimos a ofertas de investidores
-  │
-  ▼
+- Tabelas: `offers`, `matches`
+- Função: `match_loan()` conecta empréstimos a ofertas  
+  │  
+  ▼  
   Contrato Digital
-- JSON no campo contract_json de loans
-  │
-  ▼
+- JSON em `contract_json` de `loans`  
+  │  
+  ▼  
   Liberação de Recursos
-- Função: ledger_transfer()
-- Tabela: ledger (débito/crédito)
-  │
-  ▼
+- Função: `ledger_transfer()`
+- Tabela: `ledger` (débito/crédito)  
+  │  
+  ▼  
   Saldo Atualizado
-- View: balances
-- Consulta saldo após liberação/pagamento
+- View: `balances`
 
-## 5. Diagrama Entidade-Relacionamento (ERD)
+---
+
+## 6. Diagrama Entidade-Relacionamento (ERD)
 
 ```mermaid
 erDiagram
-
     USERS {
         int id PK
         text nome
@@ -123,6 +142,7 @@ erDiagram
         numeric amount
         int term_months
         text status
+        json contract_json
     }
 
     OFFERS {
@@ -148,6 +168,7 @@ erDiagram
         numeric amount
         char dc
         text ref
+        json meta
     }
 
     FRAUDS {
@@ -166,6 +187,21 @@ erDiagram
         json reason_json
     }
 
+    ACADEMIC_PERFORMANCE {
+        int id PK
+        int user_id FK
+        text period
+        numeric grade_avg
+        numeric attendance_pct
+        text status
+    }
+
+    INSTITUTIONS {
+        int id PK
+        text name
+        json integration_meta
+    }
+
     USERS ||--o{ LOANS : "tem"
     USERS ||--o{ OFFERS : "cria"
     LOANS ||--o{ MATCHES : "liga"
@@ -173,62 +209,64 @@ erDiagram
     USERS ||--o{ FRAUDS : "gera"
     USERS ||--o{ SCORES : "gera"
     USERS ||--o{ LEDGER : "conta"
+    USERS ||--o{ ACADEMIC_PERFORMANCE : "possui"
+
+
 ```
 
-## 6. Tecnologias escolhidas — justificativa
+## 7. Tecnologias e justificativa
 
-Nesta seção explicamos por que adotamos cada tecnologia e padrão arquitetural no MVP.
+### Banco de Dados: PostgreSQL (Render)
 
-### Banco de dados: PostgreSQL (hosted no Render)
+- **Por que:** ACID, robusto, suporte a JSONB, views, funções e locks por linha.
+- **Benefício:** prototipagem rápida de regras complexas (ledger, matching, triggers) sem infra pesada.
+- **Trade-off:** NoSQL não garante consistência contábil necessária para o ledger.
 
-- **Por que:** PostgreSQL é ACID, maduro, oferece boa performance e recursos avançados (JSONB, views, funções PL/pgSQL, locks por linha) que usamos para garantir consistência e auditoria.
-- **Benefício para o hackathon:** permite prototipar regras de negócio complexas (ledger, matching, triggers) sem depender de infra pesada; o plano gratuito do Render agiliza o deploy e facilita demo.
-- **Trade-off:** não usamos bancos NoSQL para tudo porque precisamos de garantias fortes de consistência contábil (dupla entrada).
+### JSONB (`contract_json`, `payload`, `meta`)
 
-### Colunas JSONB (contract_json, payload, meta)
+- **Flexível:** contratos, antifraude e metadados sem tabelas extras.
+- **Rápido para MVP:** mudanças de schema não quebram banco.
+- **Trade-off:** validação de dados na aplicação necessária.
 
-- **Por que:** flexibilidade para armazenar contratos, payloads de antifraude e metadados sem criar dezenas de tabelas auxiliares.
-- **Benefício:** acelera iteração no MVP (mudanças de campos do contrato não quebram schema) e é eficiente para consultas parciais quando necessário (JSONB).
-- **Trade-off:** dados semi-estruturados exigem validação na aplicação para garantir qualidade.
+### Funções PL/pgSQL (`ledger_transfer`, `match_loan`)
 
-### Funções PL/pgSQL (ledger_transfer, match_loan)
-
-- **Por que:** encapsular regras críticas (transferência contábil atômica, matching FIFO) no banco garante atomicidade, evita condições de corrida e facilita auditoria.
-- **Benefício:** operações atômicas seguras mesmo com concorrência; lógica persiste junto com os dados, facilitando rollback e testes.
+- Regras críticas encapsuladas no banco, garantindo atomicidade e evitando condições de corrida.
+- **Benefício:** segurança mesmo com concorrência e lógica persistente no banco.
 
 ### Triggers e snapshots em `users`
 
-- **Por que:** triggers mantêm o snapshot (fraud_score, credit_score) consistente com o histórico (frauds, scores) automaticamente.
-- **Benefício:** consultas rápidas e decisões em tempo real (ex.: bloquear onboarding) sem recalcular historicamente a cada request.
-- **Trade-off:** triggers aumentam complexidade de debugging; contudo, para um MVP com requisitos de auditoria/speed, o ganho compensa.
+- Mantêm snapshots consistentes com histórico.
+- **Benefício:** consultas e decisões em tempo real.
+- **Trade-off:** aumenta complexidade de debugging, mas ideal para MVP com auditoria.
+
+### Ledger de dupla entrada
+
+- **Por que:** consistência financeira e rastreabilidade.
+- **Benefício:** auditoria e reconciliação simplificadas.
 
 ### View `balances`
 
-- **Por que:** view sintetiza o saldo por usuário a partir do ledger de dupla entrada.
-- **Benefício:** isolamento da lógica contábil do consumo pela aplicação ou dashboard, garantindo transparência.
+- Consulta de saldo por usuário isolando lógica contábil da aplicação.
 
-### Ledger de dupla entrada (modelo contábil)
+### Ferramentas auxiliares
 
-- **Por que:** padrão contábil que garante consistência financeira e rastreabilidade (débito/credito para todo evento financeiro).
-- **Benefício:** facilita auditoria e reconciliação, ponto muito valorizado em soluções financeiras.
+- **Render:** deploy rápido do PostgreSQL.
+- **DBeaver:** gerenciamento visual do banco.
+- **Knex.js:** migrations e seeds para versão e populamento do banco.
+- **GitHub Actions:** CI para migrations e seeds automáticas.
+- **.env + Secrets:** variáveis seguras.
 
-### Ferramentas de desenvolvimento / operações
+### Segurança e conformidade
 
-- **Render (host):** deploy rápido do banco PostgreSQL (plano free), adequado para demo e hackathon.
-- **DBeaver (cliente):** gerenciamento visual do DB, inspeção de dados e execução de scripts durante a demo.
-- **GitHub Actions:** CI para aplicar migrations e seeds automaticamente (reprodutibilidade entre runs).
-- **.env + Secrets:** segredos e URLs armazenados em variáveis/Secrets — evita vazamento de credenciais.
+- Conexão TLS/SSL entre app e DB.
+- Hash de senhas (bcrypt/argon2).
+- Sanitização e validação de inputs (SQLi/XSS).
+- Histórico append-only (`frauds`, `scores`, `ledger`).
 
-### Segurança e conformidade (práticas adotadas)
+### Cobertura dos requisitos do hackathon
 
-- **Conexões TLS/SSL:** usar TLS entre app e DB (configurar `sslmode=require`) para produção/demo segura.
-- **Hash de senhas:** bcrypt/argon2 (aplicar no backend).
-- **Sanitização e validação:** inputs validados no backend para evitar SQLi/XSS (principalmente porque usamos JSONB).
-- **Auditoria:** histórico append-only (frauds, scores, ledger) garante rastreabilidade.
-
-### Como isso responde ao edital (mapping rápido)
-
-- **Carteira / P2P:** `offers`, `loans`, `matches` e `ledger` cobrem fluxo completo de investimento e repasse.
-- **Antifraude:** `frauds` + triggers permitem sinalizar/ bloquear usuários automaticamente.
-- **Score dinâmico:** `scores` + snapshot `users.credit_score` permitem decisões em tempo real.
-- **Contrato digital e liberação:** `contract_json` em `loans` + `ledger_transfer` suportam geração e execução do contrato e liberação rápida.
+- **Carteira / P2P:** `offers`, `loans`, `matches`, `ledger`.
+- **Antifraude:** `frauds` + triggers bloqueiam usuários suspeitos.
+- **Score dinâmico:** `scores` + snapshot `users.credit_score`.
+- **Contrato digital e liberação:** `contract_json` + `ledger_transfer`.
+- **Reprodutibilidade:** migrations + seeds permitem reconstruir banco do zero em qualquer ambiente.
