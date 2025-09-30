@@ -41,7 +41,5 @@ export default function DiferencialsContainer() {
                 </div>
             </div>
         </div>
-
-
     )
 }
