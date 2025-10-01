@@ -1,9 +1,10 @@
 # 🚀 QI-EDU — Plataforma de Crédito Educacional P2P
 
+# Acesse aqui a documentação do projeto: https://anabeggiato.github.io/inovcamp-qi_tech-g32/
+
+
 A **QI-EDU** é uma solução desenvolvida no Hackathon QI Tech 2025 que conecta **estudantes, investidores e instituições de ensino** por meio de uma plataforma de **crédito educacional peer-to-peer (P2P)**.  
 Nosso diferencial está no **Score Preditivo**, que leva em conta notas, frequência e sinais de evasão para oferecer crédito mais justo e sustentável.
-
----
 
 ## 🌐 Status do Projeto
 
@@ -46,8 +47,8 @@ Nosso diferencial está no **Score Preditivo**, que leva em conta notas, frequê
 ### Passos
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/seu-repo/qi-edu.git
-   cd qi-edu/src/client
+   git clone https://github.com/anabeggiato/inovcamp-qi_tech-g32
+   cd src/client
    ```
 
 2. Instale as dependências:
@@ -77,54 +78,3 @@ Nosso diferencial está no **Score Preditivo**, que leva em conta notas, frequê
 - Implementar autenticação JWT.  
 - Integrar banco de dados (PostgreSQL).  
 - Adicionar fluxo de solicitação de crédito e dashboards.  
-
----
-
-# 📖 Como Rodar a Documentação (Docusaurus)
-
-A documentação do projeto QI-EDU foi construída usando [Docusaurus 2](https://docusaurus.io/).
-
-## Pré-requisitos
-- [Node.js](https://nodejs.org/) (versão 18 ou superior)  
-- [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/) instalado  
-
-Clone o repositório:
-   ```bash
-   git clone https://github.com/seu-repo/qi-edu.git
-   cd qi-edu/src/client
-   ```
-
-## Passos
-1. Acesse a pasta `docs`:
-   ```bash
-   cd docs
-   ```
-
-2. Instale as dependências:
-   ```bash
-   npm install
-   # ou
-   yarn install
-   ```
-
-3. Rode o servidor de desenvolvimento:
-   ```bash
-   npm run start
-   # ou
-   yarn start
-   ```
-
-4. Abra no navegador:
-   ```
-   http://localhost:3000
-   ```
-
-## Comandos úteis
-- `npm run build` → gera a versão estática de produção.  
-- `npm run serve` → roda o site de documentação já **buildado**.  
-
----
-
-💡 **Dica:** Se der erro, verifique se a versão do Node está correta (`node -v`). O Docusaurus 2 exige Node 18+.
-
-
