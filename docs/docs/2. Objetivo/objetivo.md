@@ -1,5 +1,5 @@
 ---
-title: Objetivo
+title: Objetivo da Solução Proposta
 sidebar_position: 2
 ---
 

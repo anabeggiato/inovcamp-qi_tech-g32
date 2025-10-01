@@ -1,5 +1,5 @@
 ---
-title: Contexto
+title: Contexto e Proposta de Solução
 sidebar_position: 1
 ---
 
@@ -11,3 +11,5 @@ O crédito estudantil no Brasil ainda é limitado por processos burocráticos e 
 - **Risco de inadimplência:** muitos contratos são rompidos por abandono de curso, prejudicando tanto instituições financeiras quanto investidores.
 
 Esse cenário contrasta com a missão da QI Tech de democratizar o crédito e simplificar processos, deixando uma lacuna a ser preenchida por inovação.
+
+Para enfrentar esses desafios, propomos a **QI-EDU**, uma plataforma de crédito educacional **Peer-to-Peer (P2P) baseada em infraestrutura Lending as a Service (LaaS)**. A solução conecta diretamente investidores a estudantes, automatizando a concessão de crédito com base em um **Score Preditivo** que considera desempenho acadêmico, histórico de pagamentos e sinais de risco comportamental. Além de oferecer taxas mais justas e acessíveis, a plataforma garante **rastreabilidade e segurança financeira**, com repasse automatizado dos fundos diretamente para as instituições de ensino e mecanismos de mitigação de inadimplência, promovendo inclusão de talentos e proteção ao capital investido.
