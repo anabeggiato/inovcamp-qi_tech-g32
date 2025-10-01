@@ -21,7 +21,7 @@ export default function Footer() {
                     <span className="font-bold text-black mb-4">Plataforma</span>
                     <p className="mt-2 hover:text-black hover:cursor-pointer" onClick={() => router.push("/funcionamento")}>Como funciona</p>
                     <p className="mt-2 hover:text-black hover:cursor-pointer" onClick={() => router.push("/para-estudantes")}>Para Estudantes</p>
-                    <p>Para Investidores</p>
+                    <p className="mt-2 hover:text-black hover:cursor-pointer" onClick={() => router.push("/para-investidores")}>Para Investidores</p>
                 </div>
 
                 <div className="space-y-4">

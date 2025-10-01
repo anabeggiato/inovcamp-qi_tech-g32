@@ -6,7 +6,6 @@ import CardCiclo from '../components/CardCiclo'
 import WorkingContainer from '../components/WorkingContainer'
 import StudentExampleSection from '../components/StudentExampleSection'
 import StudentRequirementsContainer from '../components/StudentRequirementsContainer'
-import CallToAction from '../components/CallToAction'
 
 export default function page() {
     return (
@@ -27,7 +26,7 @@ export default function page() {
                     <CardCiclo icon={<Clock className='text-white' />} title="Pague depois" description="Comece a pagar apenas após se formar" />
                 </section>
 
-                <WorkingContainer />
+                <WorkingContainer type="student" />
 
                 <StudentExampleSection />
 

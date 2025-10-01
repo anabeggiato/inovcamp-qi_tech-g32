@@ -19,9 +19,8 @@ export default function Header() {
             {/* menu central */}
             <div className="flex items-center justify-center space-x-6 text-gray-600">
                 <p className='hover:text-black hover:cursor-pointer' onClick={() => router.push("/funcionamento")}>Como Funciona</p>
-                <p className='hover:text-black' onClick={() => router.push("/para-estudantes")}>Para Estudantes</p>
-                <p className='hover:text-black'>Para Investidores</p>
-                <p className='hover:text-black'>Sobre</p>
+                <p className='hover:text-black hover:cursor-pointer' onClick={() => router.push("/para-estudantes")}>Para Estudantes</p>
+                <p className='hover:text-black hover:cursor-pointer' onClick={() => router.push("/para-investidores")}>Para Investidores</p>
             </div>
 
             {/* botões */}
