@@ -1,6 +1,7 @@
 ---
 title: Apresentação
 sidebar_position: 1
+slug: /
 ---
 
 # QI-EDU — Democratizando o Crédito Educacional

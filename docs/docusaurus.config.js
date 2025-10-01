@@ -1,107 +1,94 @@
-// @ts-check
-import {themes as prismThemes} from 'prism-react-renderer';
+import { themes as prismThemes } from "prism-react-renderer";
+
+// This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
-  favicon: 'img/favicon.ico',
+  title: "Documentação QI Edu",
+  tagline: "Dinosaurs are cool",
+  favicon: "img/logo.svg",
 
-  future: { v4: true },
-
-  url: 'https://your-docusaurus-site.example.com',
+  // Set the production url of your site here
+  url: "https://anabeggiato.github.io",
   baseUrl: '/inovcamp-qi_tech-g32/',
 
-  // (ajuste depois para sua org/repo reais, se quiser)
-  organizationName: 'facebook',
-  projectName: 'docusaurus',
+  // GitHub pages deployment config.
+  // If you aren't using GitHub pages, you don't need these.
+  organizationName: "anabeggiato", // Usually your GitHub org/user name.
+  projectName: "inovcamp-qi_tech-g32", // Usually your repo name.
 
-  onBrokenLinks: 'throw',
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
 
+  // Even if you don't use internationalization, you can use this field to set
+  // useful metadata like html lang. For example, if your site is Chinese, you
+  // may want to replace "en" with "zh-Hans".
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
+  },
+
+  markdown: {
+    mermaid: true,
   },
 
   presets: [
     [
-      'classic',
+      "classic",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          sidebarPath: './sidebars.js',
+          sidebarPath: "./sidebars.js",
+          // Please change this to your repo.
+          // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+          routeBasePath: "/",
         },
         blog: false,
         theme: {
-          customCss: './src/css/custom.css',
+          customCss: "./src/css/custom.css",
         },
       }),
     ],
   ],
 
-  plugins: [
-    [
-      '@docusaurus/plugin-client-redirects',
-      {
-        redirects: [
-          { from: '/docs/Contexto/contexto', to: '/docs' },
-        ],
-      },
-    ],
-  ],
-
-  themes: ['@docusaurus/theme-mermaid'],
-  markdown: { mermaid: true },
+  themes: ["@docusaurus/theme-mermaid"],
 
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: 'img/docusaurus-social-card.jpg',
-      colorMode: { respectPrefersColorScheme: true },
+      // Replace with your project's social card
+      image: "img/TSF.svg",
       navbar: {
-        title: 'My Site',
-        logo: { alt: 'My Site Logo', src: 'img/logo.svg' },
+        title: "QI Edu - Documentação",
+        logo: {
+          alt: "logo",
+          src: "img/logo.svg",
+
+        },
         items: [
           {
-            type: 'docSidebar',
-            sidebarId: 'tutorialSidebar',
-            position: 'left',
-            label: 'Documentação',
+            href: "https://github.com/anabeggiato/inovcamp-qi_tech-g32/",
+            label: "GitHub",
+            position: "right",
           },
-          { href: 'https://github.com/facebook/docusaurus', label: 'GitHub', position: 'right' },
         ],
       },
       footer: {
-        style: 'dark',
+        style: "dark",
         links: [
           {
-            title: 'Docs',
+            title: "More",
             items: [
               {
-                // ✅ antes apontava para /docs/intro (quebrado)
-                label: 'Documentação',
-                to: '/docs',
+                label: "GitHub",
+                href: "https://github.com/anabeggiato/inovcamp-qi_tech-g32/",
               },
             ],
           },
-          {
-            title: 'Community',
-            items: [
-              { label: 'Stack Overflow', href: 'https://stackoverflow.com/questions/tagged/docusaurus' },
-              { label: 'Discord', href: 'https://discordapp.com/invite/docusaurus' },
-              { label: 'X', href: 'https://x.com/docusaurus' },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-              { label: 'GitHub', href: 'https://github.com/facebook/docusaurus' },
-            ],
-          },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} QI Edu, Inc. Built with Docusaurus.`,
       },
       prism: {
         theme: prismThemes.github,
