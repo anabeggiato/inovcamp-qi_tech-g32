@@ -1,8 +1,8 @@
 ---
 title: Segurança, escalabilidade e auditoria
-sidebar_position: 6
+sidebar_position: 8
 ---
-# Documentação - Segurança, Escalabilidade e Auditoria (Hackathon QI Tech)
+# Documentação - Segurança, Escalabilidade e Auditoria
 
 ## 1. Introdução
 

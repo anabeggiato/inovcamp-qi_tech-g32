@@ -1,6 +1,6 @@
 ---
 title: Estrutura do banco de dados
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # Modelagem de Banco de Dados (Hackathon QI Tech)

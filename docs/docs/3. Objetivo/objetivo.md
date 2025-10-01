@@ -1,6 +1,6 @@
 ---
 title: Objetivo da Solução Proposta
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 # Objetivo Geral

@@ -1,6 +1,6 @@
 ---
 title: Arquitetura do Sistema
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # Arquitetura e Fluxo de Valor da Solução
