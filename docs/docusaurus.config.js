@@ -46,7 +46,7 @@ const config = {
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
-          { from: '/docs/intro', to: '/docs' },
+          { from: '/docs/Contexto/contexto', to: '/docs' },
         ],
       },
     ],
