@@ -1,6 +1,6 @@
 ---
-title: Estrutura do Banco de Dados
-sidebar_position: 3
+title: Estrutura do banco de dados
+sidebar_position: 4
 ---
 
 # Modelagem de Banco de Dados

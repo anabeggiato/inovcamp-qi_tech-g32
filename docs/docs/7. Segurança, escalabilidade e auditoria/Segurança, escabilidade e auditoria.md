@@ -1,9 +1,8 @@
 ---
-title: Segurança, Escalabilidade e Auditoria
-sidebar_position: 6
+title: Segurança, escalabilidade e auditoria
+sidebar_position: 8
 ---
-
-# Segurança, Escalabilidade e Auditoria – QI-EDU
+# Documentação - Segurança, Escalabilidade e Auditoria
 
 ## 1. Introdução
 
