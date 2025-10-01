@@ -174,6 +174,28 @@ O banco de dados relacional escolhido é o **PostgreSQL**, por garantir consist�
 - **Justificativa:** Foco no core business ao integrar com serviços especializados.  
 - **Explicação:** Essa camada é o **elo com o mundo externo**, conectando QI-EDU a parceiros.  
 
+### 5.6. Motor de Score Preditivo (Análise do Aluno)
+
+- **Objetivo:** avaliar o risco de crédito de forma mais justa, indo além das análises tradicionais (SPC/Serasa) e considerando o **desempenho acadêmico** do estudante.  
+- **Inputs Utilizados:**  
+  - **Acadêmicos:** média de notas, frequência, histórico de trancamentos.  
+  - **Financeiros:** histórico de pagamentos no ledger (se houver).  
+  - **Comportamentais:** alertas de fraude ou sinais de evasão (ex.: faltas excessivas).  
+- **Processamento no MVP:**  
+  - Regra simples (heurística):  
+    - Média ≥ 7 e frequência ≥ 75% → **baixo risco**.  
+    - Média entre 5 e 7 → **risco médio**.  
+    - Média < 5 ou frequência baixa → **alto risco**.  
+- **Processamento Futuro:**  
+  - Uso de modelos de Machine Learning supervisionados (ex.: regressão logística ou árvores de decisão) treinados com dados históricos de inadimplência.  
+  - Capacidade de reavaliar periodicamente o aluno conforme chegam novos dados acadêmicos.  
+- **Integração:**  
+  - Cada cálculo gera um registro na tabela `scores`.  
+  - Snapshot atualizado no usuário (`credit_score`, `risk_band`) para consultas rápidas.  
+  - Workers periódicos reexecutam a análise quando chegam novos dados acadêmicos.  
+
+**Explicação:** esse motor é o **diferencial competitivo** da QI-EDU, porque conecta performance acadêmica com risco financeiro, reduzindo inadimplência e democratizando o crédito para bons alunos.  
+
 ---
 
 ## 6. Fluxo de Dados e Segurança (Planejado)
