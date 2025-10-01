@@ -1,10 +1,5 @@
-// db/seeds/001_demo_data.js
-const fs = require("fs");
-
 exports.seed = async function (knex) {
-  // Em transação para segurança
   await knex.transaction(async (trx) => {
-    // Truncate respeitando FK (RESTART IDENTITY CASCADE)
     await trx.raw(`
       TRUNCATE TABLE matches, ledger, loans, offers, scores, frauds, academic_performance, institutions, users RESTART IDENTITY CASCADE;
     `);
@@ -17,24 +12,28 @@ exports.seed = async function (knex) {
       ),
     });
 
-    // cria institution-user sistêmico (retorno via rows[0].id)
     const resInst = await trx.raw(`SELECT create_institution_user(1) AS id`);
-    const institutionUserId =
-      resInst.rows && resInst.rows[0] ? resInst.rows[0].id : null;
+    const institutionUserId = resInst.rows[0] ? resInst.rows[0].id : null;
 
-    // Usuários
+    // Users
     await trx("users").insert([
       {
-        nome: "Alice Silva",
+        name: "Alice Silva",
         cpf: "12345678901",
-        email: "alice@mail.com",
+        email: "alice@test.com",
         role: "student",
       },
       {
-        nome: "Bruno Souza",
+        name: "Bob Santos",
         cpf: "23456789012",
-        email: "bruno@mail.com",
+        email: "bob@test.com",
         role: "investor",
+      },
+      {
+        name: "Charlie Souza",
+        cpf: "34567890123",
+        email: "charlie@test.com",
+        role: "student",
       },
     ]);
 
@@ -74,6 +73,10 @@ exports.seed = async function (knex) {
       amount: 5000,
       term_months: 12,
       status: "pending",
+      origination_pct: 0.015,
+      marketplace_pct: 0.005,
+      custody_pct_monthly: 0.001,
+      spread_pct_annual: 0.005,
     });
 
     // Matching automático
@@ -82,13 +85,17 @@ exports.seed = async function (knex) {
     // Cria conta de custódia se necessário e transfere do investidor para custódia
     await trx.raw(`
       DO $$
-      DECLARE v_custody INT; v_investor INT := 2; v_amount NUMERIC := 5000;
+      DECLARE
+        v_custody INT;
+        v_investor INT := 2;
+        v_amount NUMERIC := 5000;
       BEGIN
         SELECT custody_user_id INTO v_custody FROM loans WHERE id = 1;
         IF v_custody IS NULL THEN
           PERFORM create_custody_for_loan(1);
           SELECT custody_user_id INTO v_custody FROM loans WHERE id = 1;
         END IF;
+
         PERFORM ledger_transfer(v_investor, v_custody, v_amount, 'loan_funding', 'loan_1_funding', jsonb_build_object('loan_id',1));
       END $$;
     `);

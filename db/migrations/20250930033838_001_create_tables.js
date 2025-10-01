@@ -1,9 +1,8 @@
-// 20250930_001_create_tables.js
 exports.up = async function (knex) {
   // users
   await knex.schema.createTable("users", (table) => {
     table.increments("id").primary();
-    table.text("nome").notNullable();
+    table.text("name").notNullable();
     table.text("cpf").unique().nullable();
     table.text("email").unique().nullable();
     table.boolean("is_system").defaultTo(false);
@@ -27,6 +26,8 @@ exports.up = async function (knex) {
       .references("id")
       .inTable("users")
       .onDelete("SET NULL");
+    table.timestamp("created_at", { useTz: true }).defaultTo(knex.fn.now());
+    table.timestamp("updated_at", { useTz: true }).defaultTo(knex.fn.now());
   });
 
   // loans
@@ -51,6 +52,11 @@ exports.up = async function (knex) {
     table.integer("term_months").notNullable();
     table.text("status").defaultTo("pending");
     table.specificType("contract_json", "jsonb").nullable();
+    table.specificType("origination_pct", "numeric").nullable();
+    table.specificType("marketplace_pct", "numeric").nullable();
+    table.specificType("custody_pct_monthly", "numeric").nullable();
+    table.specificType("spread_pct_annual", "numeric").nullable();
+    table.specificType("revenue_first_year", "numeric").nullable();
     table.timestamp("created_at", { useTz: true }).defaultTo(knex.fn.now());
     table.timestamp("updated_at", { useTz: true }).defaultTo(knex.fn.now());
   });
@@ -89,6 +95,7 @@ exports.up = async function (knex) {
     table.specificType("amount_matched", "numeric").notNullable();
     table.specificType("rate", "numeric").notNullable();
     table.timestamp("created_at", { useTz: true }).defaultTo(knex.fn.now());
+    table.timestamp("updated_at", { useTz: true }).defaultTo(knex.fn.now());
   });
 
   // ledger
@@ -107,6 +114,7 @@ exports.up = async function (knex) {
     table.text("ref").nullable();
     table.specificType("meta", "jsonb").nullable();
     table.timestamp("created_at", { useTz: true }).defaultTo(knex.fn.now());
+    table.timestamp("updated_at", { useTz: true }).defaultTo(knex.fn.now());
   });
 
   // frauds
@@ -121,6 +129,7 @@ exports.up = async function (knex) {
     table.integer("severity").defaultTo(1);
     table.specificType("payload", "jsonb").nullable();
     table.timestamp("created_at", { useTz: true }).defaultTo(knex.fn.now());
+    table.timestamp("updated_at", { useTz: true }).defaultTo(knex.fn.now());
   });
 
   // scores
@@ -135,6 +144,7 @@ exports.up = async function (knex) {
     table.text("risk_band").nullable();
     table.specificType("reason_json", "jsonb").nullable();
     table.timestamp("created_at", { useTz: true }).defaultTo(knex.fn.now());
+    table.timestamp("updated_at", { useTz: true }).defaultTo(knex.fn.now());
   });
 
   // academic_performance
@@ -156,6 +166,26 @@ exports.up = async function (knex) {
     table.text("status").nullable();
     table.specificType("meta", "jsonb").nullable();
     table.timestamp("created_at", { useTz: true }).defaultTo(knex.fn.now());
+    table.timestamp("updated_at", { useTz: true }).defaultTo(knex.fn.now());
+  });
+
+  // loan_fees (audit trail for monetization)
+  await knex.schema.createTable("loan_fees", (table) => {
+    table.increments("id").primary();
+    table
+      .integer("loan_id")
+      .references("id")
+      .inTable("loans")
+      .onDelete("CASCADE");
+    table.text("fee_type").notNullable(); // origination | marketplace | custody | spread | analytics
+    table.specificType("amount", "numeric(14,2)").notNullable();
+    table.date("period_start").nullable();
+    table.date("period_end").nullable();
+    table.timestamp("charged_at", { useTz: true }).defaultTo(knex.fn.now());
+    table.text("ledger_ref").nullable();
+    table.specificType("meta", "jsonb").nullable();
+    table.timestamp("created_at", { useTz: true }).defaultTo(knex.fn.now());
+    table.timestamp("updated_at", { useTz: true }).defaultTo(knex.fn.now());
   });
 
   // índices
@@ -183,9 +213,13 @@ exports.up = async function (knex) {
   await knex.schema.raw(
     "CREATE INDEX IF NOT EXISTS idx_ledger_user ON ledger(user_id)"
   );
+  await knex.schema.raw(
+    "CREATE INDEX IF NOT EXISTS idx_loan_fees_loan_id ON loan_fees(loan_id)"
+  );
 };
 
 exports.down = async function (knex) {
+  await knex.schema.dropTableIfExists("loan_fees");
   await knex.schema.dropTableIfExists("academic_performance");
   await knex.schema.dropTableIfExists("scores");
   await knex.schema.dropTableIfExists("frauds");
