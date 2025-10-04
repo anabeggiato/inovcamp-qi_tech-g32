@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const { testConnection } = require('./db');
+const { testConnection } = require('../db');
 
 // Importar rotas
 const authRoutes = require('./routes/auth.routes');
