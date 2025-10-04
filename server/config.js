@@ -7,7 +7,7 @@ module.exports = {
     expiresIn: '24h'
   },
   server: {
-    port: 3000,
+    port: 5000,
     env: 'development'
   }
 };

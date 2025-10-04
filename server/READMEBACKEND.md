@@ -173,13 +173,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ### 1. Health Check
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:5000/health
 ```
 
 ### 2. Login
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/login \
+curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "alice@test.com", "password": "123456"}'
 ```
@@ -187,7 +187,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 ### 3. Acessar endpoint protegido
 
 ```bash
-curl -X GET http://localhost:3000/api/students/profile \
+curl -X GET http://localhost:5000/api/students/profile \
   -H "Authorization: Bearer SEU_TOKEN_AQUI"
 ```
 
@@ -218,7 +218,7 @@ module.exports = {
     expiresIn: "24h",
   },
   server: {
-    port: 3000,
+    port: 5000,
     env: "development",
   },
 };

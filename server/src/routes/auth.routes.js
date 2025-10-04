@@ -1,8 +1,15 @@
 const express = require('express');
-const { AuthController, loginValidation } = require('../controllers/auth.controller');
+const { AuthController, loginValidation, registerValidation } = require('../controllers/auth.controller');
 const { authenticateToken } = require('../middleware/auth.middleware');
 
 const router = express.Router();
+
+/**
+ * @route   POST /api/auth/register
+ * @desc    Cadastro de usuário
+ * @access  Public
+ */
+router.post('/register', registerValidation, AuthController.register);
 
 /**
  * @route   POST /api/auth/login

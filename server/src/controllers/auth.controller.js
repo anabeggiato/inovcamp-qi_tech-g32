@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { db } = require('../../db');
-const { comparePassword } = require('../utils/hash');
+const { comparePassword, hashPassword } = require('../utils/hash');
 const config = require('../../config');
 
 /**
@@ -113,6 +113,96 @@ class AuthController {
   }
 
   /**
+   * Cadastro de usuário
+   * POST /api/auth/register
+   */
+  static async register(req, res) {
+    try {
+      const { name, email, cpf, password, role } = req.body;
+
+      console.log('🔍 Iniciando cadastro para:', email);
+
+      // Verificar se o email já existe
+      const existingUser = await db('users').where('email', email).first();
+      if (existingUser) {
+        console.log('❌ Email já existe:', email);
+        return res.status(409).json({
+          success: false,
+          message: 'Email já cadastrado'
+        });
+      }
+
+      // Verificar se o CPF já existe
+      const existingCpf = await db('users').where('cpf', cpf).first();
+      if (existingCpf) {
+        console.log('❌ CPF já existe:', cpf);
+        return res.status(409).json({
+          success: false,
+          message: 'CPF já cadastrado'
+        });
+      }
+
+      console.log('✅ Verificações de duplicata OK');
+
+      // Hash da senha
+      const hashedPassword = await hashPassword(password);
+      console.log('✅ Senha hasheada');
+
+      // Criar usuário no banco
+      const [newUser] = await db('users').insert({
+        name,
+        email,
+        cpf,
+        password: hashedPassword,
+        role
+      }).returning('*');
+
+      console.log('✅ Usuário criado com ID:', newUser.id);
+
+      // Gerar token JWT
+      const token = jwt.sign(
+        { 
+          userId: newUser.id,
+          email,
+          role
+        },
+        config.jwt.secret,
+        { expiresIn: config.jwt.expiresIn }
+      );
+
+      console.log('✅ Token gerado');
+
+      // Retornar resposta
+      res.status(201).json({
+        success: true,
+        message: 'Usuário cadastrado com sucesso',
+        data: {
+          user: {
+            id: newUser.id,
+            name: newUser.name,
+            email: newUser.email,
+            cpf: newUser.cpf,
+            role: newUser.role,
+            fraud_status: newUser.fraud_status,
+            created_at: newUser.created_at
+          },
+          token,
+          expiresIn: config.jwt.expiresIn
+        }
+      });
+
+      console.log('✅ Cadastro concluído com sucesso');
+
+    } catch (error) {
+      console.error('❌ Erro no cadastro:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  /**
    * Logout (invalidar token no frontend)
    * POST /api/auth/logout
    */
@@ -159,7 +249,62 @@ const loginValidation = [
   }
 ];
 
+/**
+ * Validações para o endpoint de cadastro
+ */
+const registerValidation = [
+  (req, res, next) => {
+    const { name, email, cpf, password, role } = req.body;
+    
+    // Campos obrigatórios
+    if (!name || !email || !cpf || !password || !role) {
+      return res.status(400).json({
+        success: false,
+        message: 'Todos os campos são obrigatórios: name, email, cpf, password, role'
+      });
+    }
+    
+    // Validação do email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email inválido'
+      });
+    }
+    
+    // Validação do CPF (formato básico)
+    const cpfRegex = /^\d{11}$/;
+    if (!cpfRegex.test(cpf.replace(/\D/g, ''))) {
+      return res.status(400).json({
+        success: false,
+        message: 'CPF deve conter 11 dígitos'
+      });
+    }
+    
+    // Validação da senha
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Senha deve ter pelo menos 6 caracteres'
+      });
+    }
+    
+    // Validação do role
+    const validRoles = ['student', 'investor', 'institution'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Role deve ser: student, investor ou institution'
+      });
+    }
+    
+    next();
+  }
+];
+
 module.exports = {
   AuthController,
-  loginValidation
+  loginValidation,
+  registerValidation
 };
