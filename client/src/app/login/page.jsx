@@ -1,7 +1,8 @@
 "use client"
 import { useEffect, useState } from 'react'
+import { ArrowLeft } from 'lucide-react';
 
-export default function page() {
+export default function Login() {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -11,7 +12,14 @@ export default function page() {
     }
 
     return (
-        <div className='w-screen h-screen bg-brand-gradient flex items-center justify-center'>
+        <div className='w-screen h-screen bg-brand-gradient flex flex-col items-center justify-center'>
+            <div className='w-[25%] mb-2'>
+                <button className='flex items-center gap-2 py-4 text-white hover:text-gray-300'>
+                    <ArrowLeft className='text-sm' />
+                    <p className=' text-md '>Voltar</p>
+                </button>
+            </div>
+
             <section className='bg-white w-[25%] h-[50%] rounded-2xl z-1 flex flex-col align-center items-center justify-between p-8 shadow-2xl'>
                 <h3 className='font-semibold pb-1 text-2xl'>Bem-vindo de volta</h3>
                 <p className='text-sm text-gray-400'>Entre com suas credenciais para acessar sua conta</p>
@@ -35,9 +43,9 @@ export default function page() {
                     <a href='/#' className='text-primary underline'>Esqueceu a senha?</a>
                 </div>
 
-                <button className='bg-primary p-2 text-white w-full rounded-lg mt-4'>Entrar</button>
+                <button className='bg-primary p-2 text-white w-full rounded-lg mt-4 hover:bg-primary/90'>Entrar</button>
 
-                <p className='text-gray-500'>Não tem uma conta? <a href="/#" className='text-primary underline'>Cadastre-se</a></p>
+                <p className='text-gray-500'>Não tem uma conta? <a href="/cadastro" className='text-primary underline'>Cadastre-se</a></p>
             </section>
         </div>
     )
