@@ -38,3 +38,4 @@ exports.down = async function (knex) {
         table.dropColumn("symbolic_payment_months");
     });
 };
+

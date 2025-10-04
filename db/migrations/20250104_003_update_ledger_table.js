@@ -26,3 +26,4 @@ exports.down = async function (knex) {
         table.dropColumn("subcategory");
     });
 };
+

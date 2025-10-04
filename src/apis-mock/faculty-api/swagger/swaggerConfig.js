@@ -319,3 +319,4 @@ const options = {
 const specs = swaggerJSDoc(options);
 
 module.exports = specs;
+

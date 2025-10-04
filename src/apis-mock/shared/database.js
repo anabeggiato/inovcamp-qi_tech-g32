@@ -13,18 +13,28 @@ console.log('[DATABASE] DB_HOST:', process.env.DB_HOST || 'NÃO DEFINIDA');
 const dbConfig = process.env.RENDER_DATABASE_URL ? {
     connectionString: process.env.RENDER_DATABASE_URL,
     ssl: { rejectUnauthorized: false },
-    max: 20, // Máximo de conexões no pool
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    max: 10, // Reduzir conexões simultâneas
+    idleTimeoutMillis: 60000, // Aumentar timeout de idle
+    connectionTimeoutMillis: 10000, // Aumentar timeout de conexão
+    acquireTimeoutMillis: 10000, // Timeout para adquirir conexão
+    createTimeoutMillis: 10000, // Timeout para criar conexão
+    destroyTimeoutMillis: 5000, // Timeout para destruir conexão
+    reapIntervalMillis: 1000, // Intervalo para limpeza
+    createRetryIntervalMillis: 200, // Intervalo para retry
 } : {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
     database: process.env.DB_NAME || 'qi_edu',
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'password',
-    max: 20, // Máximo de conexões no pool
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    max: 10,
+    idleTimeoutMillis: 60000,
+    connectionTimeoutMillis: 10000,
+    acquireTimeoutMillis: 10000,
+    createTimeoutMillis: 10000,
+    destroyTimeoutMillis: 5000,
+    reapIntervalMillis: 1000,
+    createRetryIntervalMillis: 200,
 };
 
 // Pool de conexões compartilhado
@@ -46,16 +56,25 @@ pool.on('error', (err) => {
  * @param {Array} params - Parâmetros da query
  * @returns {Promise} Resultado da query
  */
-async function query(text, params = []) {
+async function query(text, params = [], retries = 3) {
     const start = Date.now();
-    try {
-        const result = await pool.query(text, params);
-        const duration = Date.now() - start;
-        console.log(`[DATABASE] Query executada em ${duration}ms: ${text.substring(0, 50)}...`);
-        return result;
-    } catch (error) {
-        console.error('[DATABASE] Erro na query:', error);
-        throw error;
+
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const result = await pool.query(text, params);
+            const duration = Date.now() - start;
+            console.log(`[DATABASE] Query executada em ${duration}ms (tentativa ${attempt}): ${text.substring(0, 50)}...`);
+            return result;
+        } catch (error) {
+            console.error(`[DATABASE] Erro na query (tentativa ${attempt}/${retries}):`, error.message);
+
+            if (attempt === retries) {
+                throw error;
+            }
+
+            // Aguardar antes de tentar novamente
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
     }
 }
 
