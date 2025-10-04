@@ -28,7 +28,7 @@ export default function Header() {
                 <button className="rounded-lg p-2 hover:bg-primary hover:text-white transition-colors duration-300 ease-in-out" onClick={() => router.push("/login")}>
                     Entrar
                 </button>
-                <button className="bg-purple-gradient text-white rounded-lg p-2">
+                <button className="bg-purple-gradient text-white rounded-lg p-2" onClick={() => router.push('/cadastro')}>
                     Começar Agora
                 </button>
             </div>
