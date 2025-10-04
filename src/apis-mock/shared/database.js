@@ -1,12 +1,22 @@
 const { Pool } = require('pg');
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../../.env') });
 
 /**
  * Configuração compartilhada do banco de dados
  * Usado por todas as APIs e engines
  */
 
-const dbConfig = {
+// Debug: verificar variáveis de ambiente
+console.log('[DATABASE] RENDER_DATABASE_URL:', process.env.RENDER_DATABASE_URL ? 'DEFINIDA' : 'NÃO DEFINIDA');
+console.log('[DATABASE] DB_HOST:', process.env.DB_HOST || 'NÃO DEFINIDA');
+
+const dbConfig = process.env.RENDER_DATABASE_URL ? {
+    connectionString: process.env.RENDER_DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+    max: 20, // Máximo de conexões no pool
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+} : {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
     database: process.env.DB_NAME || 'qi_edu',
