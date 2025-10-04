@@ -120,13 +120,12 @@ class AuthController {
     try {
       const { name, email, cpf, password, role } = req.body;
 
-      // Verificar se o email já existe
-      const existingUser = await db('users')
-        .select('id')
-        .where('email', email)
-        .first();
+      console.log('🔍 Iniciando cadastro para:', email);
 
+      // Verificar se o email já existe
+      const existingUser = await db('users').where('email', email).first();
       if (existingUser) {
+        console.log('❌ Email já existe:', email);
         return res.status(409).json({
           success: false,
           message: 'Email já cadastrado'
@@ -134,37 +133,36 @@ class AuthController {
       }
 
       // Verificar se o CPF já existe
-      const existingCpf = await db('users')
-        .select('id')
-        .where('cpf', cpf)
-        .first();
-
+      const existingCpf = await db('users').where('cpf', cpf).first();
       if (existingCpf) {
+        console.log('❌ CPF já existe:', cpf);
         return res.status(409).json({
           success: false,
           message: 'CPF já cadastrado'
         });
       }
 
+      console.log('✅ Verificações de duplicata OK');
+
       // Hash da senha
       const hashedPassword = await hashPassword(password);
+      console.log('✅ Senha hasheada');
 
       // Criar usuário no banco
-      const [userId] = await db('users').insert({
+      const [newUser] = await db('users').insert({
         name,
         email,
         cpf,
         password: hashedPassword,
-        role,
-        fraud_status: 'active',
-        created_at: new Date(),
-        updated_at: new Date()
-      }).returning('id');
+        role
+      }).returning('*');
+
+      console.log('✅ Usuário criado com ID:', newUser.id);
 
       // Gerar token JWT
       const token = jwt.sign(
         { 
-          userId,
+          userId: newUser.id,
           email,
           role
         },
@@ -172,24 +170,31 @@ class AuthController {
         { expiresIn: config.jwt.expiresIn }
       );
 
-      // Buscar dados do usuário criado
-      const newUser = await db('users')
-        .select('id', 'name', 'email', 'cpf', 'role', 'fraud_status', 'created_at')
-        .where('id', userId)
-        .first();
+      console.log('✅ Token gerado');
 
+      // Retornar resposta
       res.status(201).json({
         success: true,
         message: 'Usuário cadastrado com sucesso',
         data: {
-          user: newUser,
+          user: {
+            id: newUser.id,
+            name: newUser.name,
+            email: newUser.email,
+            cpf: newUser.cpf,
+            role: newUser.role,
+            fraud_status: newUser.fraud_status,
+            created_at: newUser.created_at
+          },
           token,
           expiresIn: config.jwt.expiresIn
         }
       });
 
+      console.log('✅ Cadastro concluído com sucesso');
+
     } catch (error) {
-      console.error('Erro no cadastro:', error);
+      console.error('❌ Erro no cadastro:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'
