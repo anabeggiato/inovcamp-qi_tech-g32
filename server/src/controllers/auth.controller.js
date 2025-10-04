@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { db } = require('../../db');
-const { comparePassword } = require('../utils/hash');
+const { comparePassword, hashPassword } = require('../utils/hash');
 const config = require('../../config');
 
 /**
@@ -113,6 +113,91 @@ class AuthController {
   }
 
   /**
+   * Cadastro de usuário
+   * POST /api/auth/register
+   */
+  static async register(req, res) {
+    try {
+      const { name, email, cpf, password, role } = req.body;
+
+      // Verificar se o email já existe
+      const existingUser = await db('users')
+        .select('id')
+        .where('email', email)
+        .first();
+
+      if (existingUser) {
+        return res.status(409).json({
+          success: false,
+          message: 'Email já cadastrado'
+        });
+      }
+
+      // Verificar se o CPF já existe
+      const existingCpf = await db('users')
+        .select('id')
+        .where('cpf', cpf)
+        .first();
+
+      if (existingCpf) {
+        return res.status(409).json({
+          success: false,
+          message: 'CPF já cadastrado'
+        });
+      }
+
+      // Hash da senha
+      const hashedPassword = await hashPassword(password);
+
+      // Criar usuário no banco
+      const [userId] = await db('users').insert({
+        name,
+        email,
+        cpf,
+        password: hashedPassword,
+        role,
+        fraud_status: 'active',
+        created_at: new Date(),
+        updated_at: new Date()
+      }).returning('id');
+
+      // Gerar token JWT
+      const token = jwt.sign(
+        { 
+          userId,
+          email,
+          role
+        },
+        config.jwt.secret,
+        { expiresIn: config.jwt.expiresIn }
+      );
+
+      // Buscar dados do usuário criado
+      const newUser = await db('users')
+        .select('id', 'name', 'email', 'cpf', 'role', 'fraud_status', 'created_at')
+        .where('id', userId)
+        .first();
+
+      res.status(201).json({
+        success: true,
+        message: 'Usuário cadastrado com sucesso',
+        data: {
+          user: newUser,
+          token,
+          expiresIn: config.jwt.expiresIn
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro no cadastro:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  /**
    * Logout (invalidar token no frontend)
    * POST /api/auth/logout
    */
@@ -159,7 +244,62 @@ const loginValidation = [
   }
 ];
 
+/**
+ * Validações para o endpoint de cadastro
+ */
+const registerValidation = [
+  (req, res, next) => {
+    const { name, email, cpf, password, role } = req.body;
+    
+    // Campos obrigatórios
+    if (!name || !email || !cpf || !password || !role) {
+      return res.status(400).json({
+        success: false,
+        message: 'Todos os campos são obrigatórios: name, email, cpf, password, role'
+      });
+    }
+    
+    // Validação do email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email inválido'
+      });
+    }
+    
+    // Validação do CPF (formato básico)
+    const cpfRegex = /^\d{11}$/;
+    if (!cpfRegex.test(cpf.replace(/\D/g, ''))) {
+      return res.status(400).json({
+        success: false,
+        message: 'CPF deve conter 11 dígitos'
+      });
+    }
+    
+    // Validação da senha
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Senha deve ter pelo menos 6 caracteres'
+      });
+    }
+    
+    // Validação do role
+    const validRoles = ['student', 'investor', 'institution'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Role deve ser: student, investor ou institution'
+      });
+    }
+    
+    next();
+  }
+];
+
 module.exports = {
   AuthController,
-  loginValidation
+  loginValidation,
+  registerValidation
 };

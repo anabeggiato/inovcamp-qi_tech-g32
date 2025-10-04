@@ -120,6 +120,7 @@ const startServer = async () => {
       console.log(`📚 API Docs: http://localhost:${PORT}/`);
       console.log(`🌍 Ambiente: ${config.server.env}`);
       console.log('📋 Endpoints disponíveis:');
+      console.log('   POST /api/auth/register - Cadastro de usuário');
       console.log('   POST /api/auth/login - Login');
       console.log('   GET  /api/auth/verify - Verificar token');
       console.log('   POST /api/auth/logout - Logout');
