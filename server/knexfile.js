@@ -1,12 +1,12 @@
 // knexfile.js
-require("dotenv").config();
+const config = require('./config');
 
 module.exports = {
   development: {
     client: "pg",
     connection: {
-      connectionString: process.env.RENDER_DATABASE_URL,
-      ssl: { rejectUnauthorized: false }, // necessário para Render / serviços gerenciados
+      connectionString: config.database.connectionString,
+      ssl: { rejectUnauthorized: false },
     },
     pool: { min: 0, max: 10, idleTimeoutMillis: 30000 },
     migrations: {

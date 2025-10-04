@@ -1,8 +1,13 @@
+const bcrypt = require('bcryptjs');
+
 exports.seed = async function (knex) {
   await knex.transaction(async (trx) => {
     await trx.raw(`
       TRUNCATE TABLE matches, ledger, loans, offers, scores, frauds, academic_performance, institutions, users RESTART IDENTITY CASCADE;
     `);
+
+    // Hash da senha padrão "123456"
+    const hashedPassword = await bcrypt.hash('123456', 12);
 
     // Institutions
     await trx("institutions").insert({
@@ -22,18 +27,21 @@ exports.seed = async function (knex) {
         cpf: "12345678901",
         email: "alice@test.com",
         role: "student",
+        password: hashedPassword,
       },
       {
         name: "Bob Santos",
         cpf: "23456789012",
         email: "bob@test.com",
         role: "investor",
+        password: hashedPassword,
       },
       {
         name: "Charlie Souza",
         cpf: "34567890123",
         email: "charlie@test.com",
         role: "student",
+        password: hashedPassword,
       },
     ]);
 
