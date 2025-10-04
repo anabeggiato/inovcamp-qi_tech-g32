@@ -1,80 +1,209 @@
-# 🚀 QI-EDU — Plataforma de Crédito Educacional P2P
+# QiTech - Plataforma de Financiamento Educacional
 
-# Acesse aqui a documentação do projeto: https://anabeggiato.github.io/inovcamp-qi_tech-g32/
+> **Fintech inovadora que conecta estudantes, investidores e instituições de ensino através de um marketplace de financiamento educacional.**
 
+## 🚀 **Visão Geral**
 
-A **QI-EDU** é uma solução desenvolvida no Hackathon QI Tech 2025 que conecta **estudantes, investidores e instituições de ensino** por meio de uma plataforma de **crédito educacional peer-to-peer (P2P)**.  
-Nosso diferencial está no **Score Preditivo**, que leva em conta notas, frequência e sinais de evasão para oferecer crédito mais justo e sustentável.
+A QiTech é uma plataforma completa que democratiza o acesso ao financiamento educacional, oferecendo:
 
-## 🌐 Status do Projeto
+- **Para Estudantes**: Empréstimos educacionais com taxas competitivas
+- **Para Investidores**: Oportunidades de investimento com retorno atrativo
+- **Para Instituições**: Ferramentas de gestão e integração financeira
 
-✅ **Frontend iniciado:** já conta com uma **Landing Page** e páginas base para:  
-- Funcionamento da plataforma  
-- Área para Estudantes  
-- Área para Investidores  
+## 📁 **Estrutura do Projeto**
 
-📂 Estrutura atual:
 ```
-/src/client
- └── src/app/
-     ├── components/
-     ├── funcionamento/
-     ├── para-estudantes/
-     ├── para-investidores/
-     ├── favicon.ico
-     ├── globals.css
-     ├── layout.js
-     └── page.js
+qitech/
+├── client/          # Frontend (Next.js)
+├── server/          # Backend (Node.js/Express)
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   ├── db/
+│   │   ├── utils/
+│   │   └── server.js
+│   ├── db/
+│   │   ├── migrations/
+│   │   └── seeds/
+│   ├── package.json
+│   ├── config.js
+│   └── README.md
+├── docs/           # Documentação
+└── README.md       # Este arquivo
 ```
 
+## 🛠️ **Tecnologias**
+
+### **Frontend**
+- **Next.js** - Framework React
+- **Tailwind CSS** - Estilização
+- **Componentes reutilizáveis**
+
+### **Backend**
+- **Node.js** - Runtime JavaScript
+- **Express.js** - Framework web
+- **PostgreSQL** - Banco de dados
+- **JWT** - Autenticação
+- **Knex.js** - Query builder
+
+### **Banco de Dados**
+- **PostgreSQL** (Render)
+- **Migrations** versionadas
+- **Seeds** para dados de teste
+- **Triggers** e **Functions** PL/pgSQL
+
+## 🚀 **Início Rápido**
+
+### **1. Server (API)**
+```bash
+cd server
+npm install
+npm run migrate:latest
+npm run seed:run
+npm run dev
+```
+
+### **2. Frontend (Website)**
+```bash
+cd client
+npm install
+npm run dev
+```
+
+### **3. Documentação**
+```bash
+cd docs
+npm install
+npm start
+```
+
+## 📚 **Documentação**
+
+- **[Server API](./server/README.md)** - Documentação completa da API
+- **[Documentação Técnica](./docs/)** - Arquitetura, banco de dados e fluxos
+- **[Banco de Dados](./docs/docs/4.%20Banco%20de%20dados/)** - Estrutura e modelagem
+
+## 🔐 **Autenticação**
+
+### **Usuários de Teste**
+| Email | Senha | Role |
+|-------|-------|------|
+| alice@test.com | 123456 | student |
+| bob@test.com | 123456 | investor |
+| charlie@test.com | 123456 | student |
+
+### **Endpoints Principais**
+- `POST /api/auth/login` - Login
+- `GET /api/auth/verify` - Verificar token
+- `GET /api/students/*` - Rotas de estudantes
+- `GET /api/investors/*` - Rotas de investidores
+- `GET /api/loans/*` - Rotas de empréstimos
+
+## 🏗️ **Arquitetura**
+
+### **Server**
+- **API RESTful** com Express.js
+- **Autenticação JWT** com middleware
+- **Banco PostgreSQL** com Knex.js
+- **Validação** de dados
+- **Segurança** com Helmet e CORS
+
+### **Frontend**
+- **Next.js** com App Router
+- **Componentes** reutilizáveis
+- **Responsive Design**
+- **SEO** otimizado
+
+### **Banco de Dados**
+- **10 tabelas** principais
+- **4 views** para consultas
+- **15 funções** PostgreSQL
+- **Triggers** automáticos
+- **Ledger** de dupla entrada
+
+## 🧪 **Testes**
+
+```bash
+# Testar API
+cd server
+npm run test:api
+
+# Testar banco
+npm run db:test
+```
+
+## 📊 **Funcionalidades**
+
+### **Para Estudantes**
+- ✅ Solicitar empréstimos
+- ✅ Acompanhar score de crédito
+- ✅ Histórico de performance acadêmica
+- ✅ Dashboard personalizado
+
+### **Para Investidores**
+- ✅ Criar ofertas de investimento
+- ✅ Portfólio de investimentos
+- ✅ Analytics e métricas
+- ✅ Gestão de risco
+
+### **Para Instituições**
+- ✅ Gestão de estudantes
+- ✅ Relatórios financeiros
+- ✅ Integração com sistemas
+- ✅ Analytics institucionais
+
+## 🔧 **Scripts Disponíveis**
+
+### **Server**
+```bash
+npm start          # Produção
+npm run dev        # Desenvolvimento
+npm run test:api   # Testar API
+npm run migrate:latest  # Executar migrations
+npm run seed:run   # Popular banco
+```
+
+### **Frontend**
+```bash
+npm run dev        # Desenvolvimento
+npm run build      # Build produção
+npm start          # Servidor produção
+```
+
+## 🌟 **Diferenciais**
+
+- **Matching Automático** entre empréstimos e ofertas
+- **Score de Crédito Dinâmico** baseado em performance acadêmica
+- **Antifraude** integrado
+- **Monetização** automática com taxas
+- **Ledger** de dupla entrada para auditoria
+- **Contratos Digitais** com JSON
+
+## 📈 **Roadmap**
+
+- [ ] **Fase 1**: MVP com funcionalidades básicas ✅
+- [ ] **Fase 2**: Integração com bancos
+- [ ] **Fase 3**: App mobile
+- [ ] **Fase 4**: IA para recomendações
+- [ ] **Fase 5**: Expansão internacional
+
+## 🤝 **Contribuição**
+
+1. Fork o projeto
+2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
+4. Push para a branch (`git push origin feature/nova-funcionalidade`)
+5. Abra um Pull Request
+
+## 📄 **Licença**
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 👥 **Equipe**
+
+Desenvolvido pela **equipe QiTech** para o **InovCamp QI Tech G32**.
+
 ---
 
-## Tecnologias Utilizadas
-
-- **Frontend:** [Next.js](https://nextjs.org/) + React  
-- **Estilização:** CSS (arquivo `globals.css`)  
-- **Backend (planejado):** Node.js + Express (API REST)  
-- **Banco de Dados (planejado):** PostgreSQL + Redis  
-
----
-
-## Como Rodar o Frontend
-
-### Pré-requisitos
-- [Node.js](https://nodejs.org/) (versão 18 ou superior)  
-- [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/) instalado  
-
-### Passos
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/anabeggiato/inovcamp-qi_tech-g32
-   cd src/client
-   ```
-
-2. Instale as dependências:
-   ```bash
-   npm install
-   # ou
-   yarn install
-   ```
-
-3. Rode o servidor de desenvolvimento:
-   ```bash
-   npm run dev
-   # ou
-   yarn dev
-   ```
-
-4. Abra no navegador:
-   ```
-   http://localhost:3000
-   ```
-
----
-
-## Próximos Passos
-- Desenvolvimento do Backend.
-- Conectar o frontend à API backend (Node.js/Express).  
-- Implementar autenticação JWT.  
-- Integrar banco de dados (PostgreSQL).  
-- Adicionar fluxo de solicitação de crédito e dashboards.  
+**Desenvolvido com ❤️ para democratizar o acesso à educação**
