@@ -1,0 +1,30 @@
+{
+    "name": "qi-edu-score-engine",
+    "version": "1.0.0",
+    "description": "Motor de Score Preditivo com verificação antifraude - QI-EDU",
+    "main": "score-engine.js",
+    "scripts": {
+        "start": "node score-engine.js",
+        "test": "jest",
+        "dev": "nodemon score-engine.js"
+    },
+    "dependencies": {
+        "pg": "^8.11.3",
+        "dotenv": "^16.3.1",
+        "winston": "^3.10.0",
+        "joi": "^17.9.2"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.1",
+        "jest": "^29.6.2"
+    },
+    "keywords": [
+        "score",
+        "engine",
+        "credit",
+        "fraud",
+        "qi-edu"
+    ],
+    "author": "Dev 3 - QI-EDU Team",
+    "license": "MIT"
+}
