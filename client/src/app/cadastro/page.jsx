@@ -3,27 +3,23 @@ import { useState } from 'react'
 import { GraduationCap, DollarSign, ArrowLeft } from 'lucide-react'
 
 export default function Register() {
-    // Mapeamento da seleção de roles do frontend (em português) para o backend (em inglês)
     const roleMapping = {
         'Estudante': 'student',
         'Investidor': 'investor'
     };
 
-    // Estado para armazenar as informações do usuário
     const [user, setUser] = useState({
         name: '',
         cpf: '',
         email: '',
         password: '',
-        role: 'Estudante',  // Valor inicial em português
+        role: 'Estudante',  
     });
 
-    // Função para alterar a seleção do role
     const handleSelectRole = (role) => {
         setUser(prevState => ({ ...prevState, role }));
     };
 
-    // Função para atualizar as informações do usuário
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setUser(prevState => ({
@@ -32,16 +28,13 @@ export default function Register() {
         }));
     };
 
-    // Quando for enviar os dados para o backend, fazemos o mapeamento do role
     const handleSubmit = () => {
         const dataToSend = {
             ...user,
-            role: roleMapping[user.role],  // Mapeando o role para o valor esperado pelo backend
+            role: roleMapping[user.role],  
         };
 
-        // Enviar dataToSend para o backend (exemplo fictício)
         console.log('Enviando dados para o backend:', dataToSend);
-        // Aqui você pode fazer uma requisição para a API do backend, como um fetch ou axios.
     };
 
     return (
