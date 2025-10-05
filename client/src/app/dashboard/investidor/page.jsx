@@ -1,15 +1,17 @@
 "use client"
 import Footer from '@/app/components/Footer'
 import Header from '@/app/components/Header'
-import { DollarSign} from 'lucide-react'
+import { DollarSign } from 'lucide-react'
 import { useState } from 'react'
 import GeneralVision from './GeneralVision'
 import OpportunitiesVision from './OpportunitiesVision'
+import LoanOffer from './LoanOffer'
 
 
 export default function InvestorPage() {
 
     const [vision, setVision] = useState('opportunities')
+    const [showOffer, setShowOffer] = useState(false);
 
     return (
         <div>
@@ -25,10 +27,12 @@ export default function InvestorPage() {
                     </div>
 
                     <div className='w-full flex justify-end'>
-                        <button className='flex items-center bg-second-gradient p-2 py-1 text-white rounded-lg text-sm gap-2 hover:shadow-md'>
+                        <button className='flex items-center bg-second-gradient p-2 py-1 text-white rounded-lg text-sm gap-2 hover:shadow-md' onClick={() => setShowOffer(!showOffer)}>
                             <DollarSign size={16} /> Oferecer empréstimo
                         </button>
                     </div>
+                    {showOffer && <LoanOffer showPopup={showOffer} setShowPopup={setShowOffer} onSubmit={(payload) => { console.log("Enviar pro backend:", payload); }}
+                    />}
                 </section>
 
                 <div className='w-full flex items-start '>
