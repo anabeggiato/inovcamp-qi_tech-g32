@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./swagger/swaggerConfig');
 const { createServiceLogger } = require('../shared/logger');
