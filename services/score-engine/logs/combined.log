@@ -784,3 +784,74 @@
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Score de fraude calculado: 100 para usuário 16\u001b[39m","timestamp":"2025-10-05 07:40:19"}
 {"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ATTENDANCE-CALCULATOR] Nenhum dado de frequência encontrado para usuário 16, usando dados padrão\u001b[39m","timestamp":"2025-10-05 07:40:19"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Score de frequência calculado: 99.94 para usuário 16\u001b[39m","timestamp":"2025-10-05 07:40:19"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[SCORE-ENGINE] QI-EDU Score Engine rodando na porta 3003\u001b[39m","timestamp":"2025-10-05 07:52:18"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[SCORES-ROUTES] Calculando score para usuário 7\u001b[39m","timestamp":"2025-10-05 07:55:56"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Calculando score acadêmico para o usuário: 7\u001b[39m","timestamp":"2025-10-05 07:55:56"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Calculando score de frequência para o usuário: 7\u001b[39m","timestamp":"2025-10-05 07:55:56"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Calculando score de fraude para o usuário: 7\u001b[39m","timestamp":"2025-10-05 07:55:56"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Calculando score de risco para o usuário: 7\u001b[39m","timestamp":"2025-10-05 07:55:56"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Gerando perfil de risco único para usuário 7\u001b[39m","timestamp":"2025-10-05 07:55:56"}
+{"creditHistory":"poor","level":"\u001b[32minfo\u001b[39m","loginPattern":"regular","message":"\u001b[32m[RISK-CLASSIFIER] Perfil gerado para usuário 7:\u001b[39m","overallConsistency":0.743306755829904,"riskLevel":"medium","timestamp":"2025-10-05 07:55:56"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Score de risco calculado: 67 para usuário 7\u001b[39m","timestamp":"2025-10-05 07:55:56"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Nenhuma fraude encontrada para usuário 7\u001b[39m","timestamp":"2025-10-05 07:55:58"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Score de fraude calculado: 100 para usuário 7\u001b[39m","timestamp":"2025-10-05 07:55:58"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ATTENDANCE-CALCULATOR] Nenhum dado de frequência encontrado para usuário 7, usando dados padrão\u001b[39m","timestamp":"2025-10-05 07:55:58"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Score de frequência calculado: 68.11 para usuário 7\u001b[39m","timestamp":"2025-10-05 07:55:58"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ACADEMIC-CALCULATOR] Nenhum dado acadêmico encontrado para usuário 7, usando dados padrão\u001b[39m","timestamp":"2025-10-05 07:55:58"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Score acadêmico calculado: 73.95 para usuário 7\u001b[39m","timestamp":"2025-10-05 07:55:58"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[SCORES-ROUTES] Calculando score para usuário 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Calculando score acadêmico para o usuário: 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Calculando score de frequência para o usuário: 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Calculando score de fraude para o usuário: 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Calculando score de risco para o usuário: 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Gerando perfil de risco único para usuário 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"creditHistory":"excellent","level":"\u001b[32minfo\u001b[39m","loginPattern":"erratic","message":"\u001b[32m[RISK-CLASSIFIER] Perfil gerado para usuário 8:\u001b[39m","overallConsistency":0.854318201303155,"riskLevel":"medium","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Score de risco calculado: 76 para usuário 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ACADEMIC-CALCULATOR] Nenhum dado acadêmico encontrado para usuário 8, usando dados padrão\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Score acadêmico calculado: 83.7 para usuário 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ATTENDANCE-CALCULATOR] Nenhum dado de frequência encontrado para usuário 8, usando dados padrão\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Score de frequência calculado: 99.94 para usuário 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Nenhuma fraude encontrada para usuário 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Score de fraude calculado: 100 para usuário 8\u001b[39m","timestamp":"2025-10-05 07:56:03"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[SCORES-ROUTES] Calculando score para usuário 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Calculando score acadêmico para o usuário: 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Calculando score de frequência para o usuário: 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Calculando score de fraude para o usuário: 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Calculando score de risco para o usuário: 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Gerando perfil de risco único para usuário 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"creditHistory":"fair","level":"\u001b[32minfo\u001b[39m","loginPattern":"regular","message":"\u001b[32m[RISK-CLASSIFIER] Perfil gerado para usuário 9:\u001b[39m","overallConsistency":0.41532964677640605,"riskLevel":"medium","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Score de risco calculado: 54 para usuário 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ACADEMIC-CALCULATOR] Nenhum dado acadêmico encontrado para usuário 9, usando dados padrão\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Score acadêmico calculado: 78.7 para usuário 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Nenhuma fraude encontrada para usuário 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Score de fraude calculado: 100 para usuário 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ATTENDANCE-CALCULATOR] Nenhum dado de frequência encontrado para usuário 9, usando dados padrão\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Score de frequência calculado: 93.84 para usuário 9\u001b[39m","timestamp":"2025-10-05 07:56:38"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[SCORES-ROUTES] Calculando score para usuário 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Calculando score acadêmico para o usuário: 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Calculando score de frequência para o usuário: 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Calculando score de fraude para o usuário: 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Calculando score de risco para o usuário: 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Gerando perfil de risco único para usuário 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"creditHistory":"very_poor","level":"\u001b[32minfo\u001b[39m","loginPattern":"erratic","message":"\u001b[32m[RISK-CLASSIFIER] Perfil gerado para usuário 10:\u001b[39m","overallConsistency":0.5263410922496571,"riskLevel":"medium","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Score de risco calculado: 54 para usuário 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ACADEMIC-CALCULATOR] Nenhum dado acadêmico encontrado para usuário 10, usando dados padrão\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Score acadêmico calculado: 72.38 para usuário 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ATTENDANCE-CALCULATOR] Nenhum dado de frequência encontrado para usuário 10, usando dados padrão\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Score de frequência calculado: 80.93 para usuário 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Nenhuma fraude encontrada para usuário 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Score de fraude calculado: 100 para usuário 10\u001b[39m","timestamp":"2025-10-05 07:57:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[SCORES-ROUTES] Calculando score para usuário 7\u001b[39m","timestamp":"2025-10-05 08:11:04"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Calculando score acadêmico para o usuário: 7\u001b[39m","timestamp":"2025-10-05 08:11:04"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Calculando score de frequência para o usuário: 7\u001b[39m","timestamp":"2025-10-05 08:11:04"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Calculando score de fraude para o usuário: 7\u001b[39m","timestamp":"2025-10-05 08:11:04"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Calculando score de risco para o usuário: 7\u001b[39m","timestamp":"2025-10-05 08:11:04"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Gerando perfil de risco único para usuário 7\u001b[39m","timestamp":"2025-10-05 08:11:04"}
+{"creditHistory":"poor","level":"\u001b[32minfo\u001b[39m","loginPattern":"regular","message":"\u001b[32m[RISK-CLASSIFIER] Perfil gerado para usuário 7:\u001b[39m","overallConsistency":0.743306755829904,"riskLevel":"medium","timestamp":"2025-10-05 08:11:04"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[RISK-CLASSIFIER] Score de risco calculado: 67 para usuário 7\u001b[39m","timestamp":"2025-10-05 08:11:04"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ACADEMIC-CALCULATOR] Nenhum dado acadêmico encontrado para usuário 7, usando dados padrão\u001b[39m","timestamp":"2025-10-05 08:11:05"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Score acadêmico calculado: 73.95 para usuário 7\u001b[39m","timestamp":"2025-10-05 08:11:05"}
+{"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ATTENDANCE-CALCULATOR] Nenhum dado de frequência encontrado para usuário 7, usando dados padrão\u001b[39m","timestamp":"2025-10-05 08:11:05"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ATTENDANCE-CALCULATOR] Score de frequência calculado: 68.11 para usuário 7\u001b[39m","timestamp":"2025-10-05 08:11:05"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Nenhuma fraude encontrada para usuário 7\u001b[39m","timestamp":"2025-10-05 08:11:05"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FRAUD-ANALYZER] Score de fraude calculado: 100 para usuário 7\u001b[39m","timestamp":"2025-10-05 08:11:05"}

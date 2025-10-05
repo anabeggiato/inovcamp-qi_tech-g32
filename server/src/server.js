@@ -18,6 +18,7 @@ const offersRoutes = require('./routes/offers.routes');
 const matchingRoutes = require('./routes/matching.routes');
 const scoresRoutes = require('./routes/scores.routes');
 const automationRoutes = require('./routes/automation.routes');
+const notificationsRoutes = require('./routes/notifications.routes');
 
 const app = express();
 const PORT = config.server.port;
@@ -85,7 +86,8 @@ app.get('/', (req, res) => {
       offers: '/api/offers',
       matching: '/api/matching',
       scores: '/api/scores',
-      automation: '/api/automation'
+      automation: '/api/automation',
+      notifications: '/api/notifications'
     },
     documentation: 'https://github.com/qitech/api-docs'
   });
@@ -103,6 +105,7 @@ app.use('/api/offers', offersRoutes);
 app.use('/api/matching', matchingRoutes);
 app.use('/api/scores', scoresRoutes);
 app.use('/api/automation', automationRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Middleware para rotas não encontradas
 app.use('*', (req, res) => {

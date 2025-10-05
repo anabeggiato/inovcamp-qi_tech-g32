@@ -1,11 +1,12 @@
 const { db } = require('../../db');
+const eventService = require('../services/eventService');
 
 /**
  * Controller para sistema de matching P2P
  * Seguindo boas práticas: responsabilidade única, tratamento de erros, validações
  */
 class MatchingController {
-  
+
   /**
    * Executar matching entre ofertas e empréstimos
    * @param {Object} req - Request object
@@ -29,9 +30,18 @@ class MatchingController {
       // Executar matching
       const matchResult = await MatchingController._createMatch(loan_id, offer_id);
 
-      // Se o matching foi bem-sucedido, chamar API de pagamentos
+      // Se o matching foi bem-sucedido, disparar evento e processar pagamento
       if (matchResult.success) {
         try {
+          // Disparar evento de match aprovado
+          await eventService.emitEvent('match.approved', {
+            match: matchResult.match,
+            loan: matchResult.loan,
+            offer: matchResult.offer
+          });
+          console.log('🎯 Evento match.approved disparado');
+
+          // Processar pagamento via API
           await MatchingController._processPayment(matchResult.match);
           console.log('✅ Pagamento processado com sucesso');
         } catch (paymentError) {
@@ -60,7 +70,7 @@ class MatchingController {
   static async getLoanMatches(req, res) {
     try {
       const { loan_id } = req.params;
-      
+
       console.log(`🔍 Listando matches do empréstimo ${loan_id}`);
 
       const matches = await db('matches')
@@ -100,7 +110,7 @@ class MatchingController {
   static async getOfferMatches(req, res) {
     try {
       const { offer_id } = req.params;
-      
+
       console.log(`🔍 Listando matches da oferta ${offer_id}`);
 
       const matches = await db('matches')
@@ -129,6 +139,75 @@ class MatchingController {
     } catch (error) {
       console.error('❌ Erro ao listar matches da oferta:', error);
       MatchingController._handleError(res, error, 'listar matches da oferta');
+    }
+  }
+
+  /**
+   * Aprovar um match (investidor aceita o empréstimo)
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   */
+  static async approveMatch(req, res) {
+    try {
+      const { match_id } = req.params;
+      const { investor_id } = req.body;
+
+      console.log(`✅ Aprovando match ${match_id} pelo investidor ${investor_id}`);
+
+      // Buscar o match
+      const match = await db('matches')
+        .select('matches.*', 'loans.*', 'offers.*')
+        .join('loans', 'matches.loan_id', 'loans.id')
+        .join('offers', 'matches.offer_id', 'offers.id')
+        .where('matches.id', match_id)
+        .where('offers.investor_id', investor_id)
+        .first();
+
+      if (!match) {
+        return res.status(404).json({
+          success: false,
+          message: 'Match não encontrado ou investidor não autorizado'
+        });
+      }
+
+      if (match.status !== 'pending') {
+        return res.status(400).json({
+          success: false,
+          message: 'Match já foi processado'
+        });
+      }
+
+      // Atualizar status do match para aprovado
+      await db('matches')
+        .where('id', match_id)
+        .update({
+          status: 'approved',
+          approved_at: new Date(),
+          updated_at: new Date()
+        });
+
+      // Disparar evento de match aprovado
+      await eventService.emitEvent('match.approved', {
+        match: { ...match, status: 'approved' },
+        loan: match,
+        offer: match
+      });
+
+      console.log(`🎯 Evento match.approved disparado para match ${match_id}`);
+
+      res.json({
+        success: true,
+        message: 'Match aprovado com sucesso',
+        data: {
+          match_id,
+          status: 'approved',
+          amount: match.amount_matched
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao aprovar match:', error);
+      MatchingController._handleError(res, error, 'aprovar match');
     }
   }
 
@@ -316,7 +395,7 @@ class MatchingController {
       };
 
       const response = await axios.post(`${paymentApiUrl}/disburse`, paymentData);
-      
+
       console.log('✅ Pagamento processado:', response.data);
       return response.data;
 
@@ -377,7 +456,7 @@ class MatchingController {
    */
   static _handleError(res, error, operation) {
     console.error(`❌ Erro ao ${operation}:`, error);
-    
+
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor',
