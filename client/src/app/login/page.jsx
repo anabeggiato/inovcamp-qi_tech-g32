@@ -20,7 +20,16 @@ export default function Login() {
             const response = await authService.login({ email, password });
 
             if (response?.success) {
-                router.push("/");
+                // Redirecionar baseado no role do usuário
+                const userRole = response.data.user.role;
+                if (userRole === 'student') {
+                    router.push("/dashboard/estudante");
+                } else if (userRole === 'investor') {
+                    router.push("/dashboard/investidor");
+                } else {
+                    // Para outros roles ou fallback
+                    router.push("/");
+                }
             } else {
                 setError(response?.message || "Erro ao realizar login");
             }

@@ -8,7 +8,7 @@
 
 ## 1️⃣ Estrutura Necessária
 ```
-src/apis-mock/
+services/
 ├── shared/           # Módulos compartilhados (OBRIGATÓRIO)
 └── payment-api/      # API de Pagamentos
 ```
@@ -20,7 +20,7 @@ src/apis-mock/
 ### 🔧 Passo 1: Instalar Módulos Compartilhados (OBRIGATÓRIO)
 ```bash
 # Navegar para o diretório shared
-cd src/apis-mock/shared
+cd services/shared
 
 # Instalar dependências
 npm install
@@ -29,7 +29,7 @@ npm install
 ### 🔧 Passo 2: Instalar Payment API
 ```bash
 # Navegar para a Payment API
-cd src/apis-mock/payment-api
+cd services/payment-api
 
 # Instalar dependências
 npm install
@@ -64,14 +64,14 @@ Invoke-RestMethod -Uri "http://localhost:3002/api/payments/transactions"
 ### ❌ Erro: "Cannot find module 'pg'"
 ```bash
 # Instalar pg no diretório shared
-cd src/apis-mock/shared
+cd services/shared
 npm install pg
 ```
 
 ### ❌ Erro: "Cannot find module 'winston'"
 ```bash
 # Instalar winston no diretório shared
-cd src/apis-mock/shared
+cd services/shared
 npm install winston
 ```
 
@@ -90,10 +90,10 @@ taskkill /PID <PID_NUMBER> /F
 
 ```bash
 # 1. Módulos Compartilhados (OBRIGATÓRIO)
-cd src/apis-mock/shared && npm install
+cd services/shared && npm install
 
 # 2. Payment API
-cd src/apis-mock/payment-api && npm install && node server.js
+cd services/payment-api && npm install && node server.js
 ```
 
 **🎉 Pronto! Payment API rodando em `http://localhost:3002`!**
