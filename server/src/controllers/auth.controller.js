@@ -159,6 +159,48 @@ class AuthController {
 
       console.log('✅ Usuário criado com ID:', newUser.id);
 
+      // 1) Criar conta de custódia via Payment API
+      let custodyResult = { status: 'pending' };
+      try {
+        const axios = require('axios');
+        const paymentApiUrl = process.env.PAYMENT_API_URL || 'http://localhost:3002';
+        const custodyResp = await axios.post(`${paymentApiUrl}/custody/accounts`, {
+          user_id: newUser.id
+        }, { timeout: 2000 });
+        custodyResult = { status: 'active', data: custodyResp.data };
+        console.log('✅ Conta de custódia criada');
+      } catch (e) {
+        console.warn('⚠️  Falha ao criar conta de custódia (seguindo mesmo assim):', e.message);
+      }
+
+      // 2) Calcular score inicial (função do banco)
+      try {
+        await db.raw('SELECT recompute_score_for_user(?)', [newUser.id]);
+      } catch (e) {
+        console.warn('⚠️  Falha ao recomputar score inicial:', e.message);
+      }
+
+      // 3) Buscar score mais recente na tabela scores
+      let initialScore = null;
+      try {
+        const latest = await db('scores')
+          .select('user_id', 'score', 'risk_band', 'reason_json', 'created_at')
+          .where('user_id', newUser.id)
+          .orderBy('created_at', 'desc')
+          .first();
+        if (latest) {
+          initialScore = {
+            userId: latest.user_id,
+            score: latest.score,
+            riskBand: latest.risk_band,
+            details: latest.reason_json,
+            source: 'scores_table'
+          };
+        }
+      } catch (e) {
+        console.warn('⚠️  Falha ao ler score inicial:', e.message);
+      }
+
       // Gerar token JWT
       const token = jwt.sign(
         { 
@@ -185,6 +227,11 @@ class AuthController {
             role: newUser.role,
             fraud_status: newUser.fraud_status,
             created_at: newUser.created_at
+          },
+          onboarding: {
+            custody: custodyResult,
+            score: initialScore,
+            status: (custodyResult.status === 'active') ? 'Conta criada e ativa' : 'Conta pendente'
           },
           token,
           expiresIn: config.jwt.expiresIn

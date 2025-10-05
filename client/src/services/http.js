@@ -9,13 +9,17 @@ function getToken() {
 async function request(path, { method = "GET", body, headers = {} } = {}) {
   const token = getToken();
 
-  const res = await fetch(`${BASE_URL}${path}`, {
+  // Evita cache agressivo no browser quando buscamos dados dinâmicos
+  const finalPath = method === 'GET' ? `${path}${path.includes('?') ? '&' : '?'}_=${Date.now()}` : path;
+
+  const res = await fetch(`${BASE_URL}${finalPath}`, {
     method,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
+    cache: 'no-store',
     body: body ? JSON.stringify(body) : undefined,
   });
 

@@ -267,55 +267,94 @@ class StudentsController {
         });
       }
 
-      // Chamar Score Engine API
-      const axios = require('axios');
-      const scoreApiUrl = process.env.SCORE_API_URL || 'http://localhost:3003';
-      
-      try {
-        // Primeiro, calcular o score
-        const calculateResponse = await axios.post(`${scoreApiUrl}/scores/calculate`, {
-          userId: studentId
-        });
+      // Sempre retornar do banco (tabela scores). Score Engine desabilitado por padrão
+      const latestScore = await db('scores')
+        .select('user_id', 'score', 'risk_band', 'reason_json', 'created_at')
+        .where('user_id', studentId)
+        .orderBy('created_at', 'desc')
+        .first();
 
-        console.log('✅ Score calculado pelo Score Engine');
-        
-        res.json({
-          success: true,
-          message: 'Score obtido com sucesso',
-          data: {
-            student: {
-              id: student.id,
-              name: student.name,
-              email: student.email
-            },
-            score: calculateResponse.data.data
-          }
-        });
+      const computeBand = (s) => {
+        if (s == null) return null;
+        if (s >= 760) return 'A';
+        if (s >= 650) return 'B';
+        if (s >= 500) return 'C';
+        return 'D';
+      };
 
-      } catch (apiError) {
-        console.error('❌ Erro ao chamar Score Engine:', apiError.message);
-        
-        // Se o Score Engine não estiver disponível, retornar dados do banco
-        res.json({
-          success: true,
-          message: 'Score obtido do banco de dados',
-          data: {
-            student: {
-              id: student.id,
-              name: student.name,
-              email: student.email
-            },
-            score: {
-              userId: studentId,
-              score: student.credit_score || 0,
-              riskBand: student.risk_band || 'E',
-              fraudScore: student.fraud_score || 0,
-              fraudStatus: student.fraud_status || 'unknown',
-              note: "Dados do banco - Score Engine indisponível"
-            }
-          }
-        });
+      const band = latestScore?.risk_band || computeBand(latestScore?.score) || student.risk_band || 'E';
+      const sc = latestScore?.score ?? student.credit_score ?? 0;
+
+      // Trazer também desempenho acadêmico mais recente
+      const latestAcademic = await db('academic_performance')
+        .select('grade_avg', 'attendance_pct', 'status', 'period', 'created_at')
+        .where('user_id', studentId)
+        .orderBy('created_at', 'desc')
+        .first();
+
+      // Resumo de empréstimo: valor financiado e próxima parcela em aberto
+      let loanSummary = null;
+      const activeLoan = await db('loans')
+        .select('id', 'amount', 'status', 'created_at', 'match_created_at', 'offer_created_at')
+        .where('borrower_id', studentId)
+        .whereIn('status', ['active', 'matched', 'disbursed'])
+        .orderBy('created_at', 'desc')
+        .first();
+
+      if (activeLoan) {
+        const nextInstallment = await db('installments')
+          .select('due_date', 'amount')
+          .where('loan_id', activeLoan.id)
+          .andWhere('paid', false)
+          .orderBy('due_date', 'asc')
+          .first();
+
+        loanSummary = {
+          loanId: activeLoan.id,
+          amount: activeLoan.amount != null ? Number(activeLoan.amount) : null,
+          status: activeLoan.status,
+          nextDueDate: nextInstallment ? nextInstallment.due_date : null,
+          nextInstallmentAmount: nextInstallment ? Number(nextInstallment.amount) : null,
+          events: [
+            // possible events to build a simple timeline
+            ...(activeLoan.offer_created_at ? [{ label: 'Oferta Recebida', date: activeLoan.offer_created_at }] : []),
+            ...(activeLoan.match_created_at ? [{ label: 'Match Efetuado', date: activeLoan.match_created_at }] : []),
+            { label: 'Empréstimo Aprovado', date: activeLoan.created_at }
+          ]
+        };
       }
+
+      res.set('Cache-Control', 'no-store');
+      return res.json({
+        success: true,
+        message: 'Score obtido do banco de dados',
+        data: {
+          student: {
+            id: student.id,
+            name: student.name,
+            email: student.email
+          },
+          score: {
+            userId: studentId,
+            score: sc,
+            riskBand: band,
+            details: latestScore?.reason_json || null,
+            source: latestScore ? 'scores_table' : 'users_table',
+            academic: latestAcademic ? {
+              gradeAvg: latestAcademic.grade_avg != null ? Number(latestAcademic.grade_avg) : null,
+              attendancePct: latestAcademic.attendance_pct != null ? Number(latestAcademic.attendance_pct) : null,
+              status: latestAcademic.status || null,
+              period: latestAcademic.period || null,
+              updatedAt: latestAcademic.created_at
+            } : null,
+            loan: loanSummary,
+            timeline: [
+              ...(loanSummary?.events || []),
+              ...(latestAcademic?.status === 'active' ? [{ label: 'Matrícula Aprovada', date: latestAcademic.created_at }] : [])
+            ]
+          }
+        }
+      });
 
     } catch (error) {
       console.error('❌ Erro ao buscar score:', error);

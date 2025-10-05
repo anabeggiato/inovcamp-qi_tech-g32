@@ -7,10 +7,14 @@ import ProgressBar from '@/app/components/ProgressBar'
 import ProtectedRoute from '@/app/components/ProtectedRoute'
 import Solicitation from './Solicitation'
 import { DollarSign, Clock, GraduationCap, CheckCircle2, AlertCircle, TrendingUp, FileText } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { authService } from '@/services/authService'
+import { studentService } from '@/services/studentService'
 
 export default function StudentPage() {
     const [showPopup, setShowPopup] = useState(false);
+    const [scoreData, setScoreData] = useState({ score: 0, credit_score: 0, risk_band: '-', fraud_status: '-' });
+    const [loadingScore, setLoadingScore] = useState(true);
 
     const institutions = [
         { id: 1, name: "Universidade Federal XPTO" },
@@ -18,7 +22,24 @@ export default function StudentPage() {
         { id: 3, name: "Instituto Tecnológico QI" },
     ];
 
-    const scoreData = { credit_score: 845, risk_band: "A", fraud_status: "Sem indícios" };
+    useEffect(() => {
+        const loadScore = async () => {
+            try {
+                const user = authService.getUser();
+                if (!user?.id) {
+                    setLoadingScore(false);
+                    return;
+                }
+                const score = await studentService.getScore(user.id);
+                setScoreData(score);
+            } catch (e) {
+                // Keep defaults on error
+            } finally {
+                setLoadingScore(false);
+            }
+        };
+        loadScore();
+    }, []);
 
     return (
         <ProtectedRoute requiredRole="student">
@@ -37,13 +58,15 @@ export default function StudentPage() {
                     <section className='flex items-center justify-between w-full border border-border rounded-lg p-8 bg-gradient-to-r from-lilac/15 to-sea-green/15'>
                         <div className='text-left'>
                             <p>Seu Score Acadêmico</p>
-                            <h2 className='text-primary'>A+</h2>
-                            <p>Score: 850/1000</p>
+                            <h2 className='text-primary'>{(scoreData.risk_band || '-').toString().toUpperCase()}</h2>
+                            <p>
+                                {loadingScore ? 'Carregando...' : `Score: ${Math.round((scoreData.score ?? scoreData.credit_score) || 0)}`}
+                            </p>
                         </div>
 
                         <div>
-                            <ProgressBar progress={85} />
-                            <p>Excelente! Continue assim para mantere as taxas baixas.</p>
+                            <ProgressBar progress={Math.min(100, Math.max(0, Math.round(((scoreData.score ?? scoreData.credit_score) || 0)/10)))} />
+                            <p>{scoreData.fraud_status && scoreData.fraud_status !== 'unknown' ? `Status de fraude: ${scoreData.fraud_status}` : ' '}</p>
                         </div>
                         <div>
                             <button className='bg-white p-2 text-black rounded-lg hover:bg-primary hover:text-white'>Ver detalhes</button>
@@ -52,9 +75,34 @@ export default function StudentPage() {
 
                     {/*Infos do empréstimo */}
                     <section className='grid grid-cols-3 w-full justify-items-center gap-8'>
-                        <CardInfoEmprestimo title="Valor Financiado" icon={<DollarSign size={16} />} value="R$ 35.000" subtitle="Taxa: 8.5% a.a." />
-                        <CardInfoEmprestimo title="Próximo Pagamento" icon={<Clock size={16} />} value="Jun/2026" subtitle="Após formatura" />
-                        <CardInfoEmprestimo title="Status do Curso" icon={<GraduationCap size={16} />} value="Ativo" subtitle="Frequência: 95%" />
+                        <CardInfoEmprestimo
+                          title="Valor Financiado"
+                          icon={<DollarSign size={16} />}
+                          value={
+                            scoreData?.loan?.amount != null
+                              ? `R$ ${Number(scoreData.loan.amount).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`
+                              : 'R$ -'
+                          }
+                          subtitle={"Taxa: 8.5% a.a."}
+                        />
+                        <CardInfoEmprestimo
+                          title="Próximo Pagamento"
+                          icon={<Clock size={16} />}
+                          value={
+                            scoreData?.loan?.nextDueDate
+                              ? new Date(scoreData.loan.nextDueDate).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })
+                                  .replace('.', '')
+                                  .replace(/^(\w)/, (m) => m.toUpperCase())
+                              : '-'
+                          }
+                          subtitle={scoreData?.loan?.nextInstallmentAmount != null ? `Parcela: R$ ${Number(scoreData.loan.nextInstallmentAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Após formatura'}
+                        />
+                        <CardInfoEmprestimo
+                          title="Status do Curso"
+                          icon={<GraduationCap size={16} />}
+                          value={scoreData?.academic?.status ? scoreData.academic.status : '-'}
+                          subtitle={scoreData?.academic?.attendancePct != null ? `Frequência: ${Math.round(Number(scoreData.academic.attendancePct))}%` : 'Frequência: -'}
+                        />
                     </section>
 
                     {/*Status emprestimo e faculdade */}
@@ -65,7 +113,10 @@ export default function StudentPage() {
                                 <CheckCircle2 className='text-success-green pt-1' size={20} />
                                 <p className='flex flex-col text-md'>
                                     <span className='text-black font-medium'>Empréstimo Aprovado</span>
-                                    15/01/2025
+                                    {(() => {
+                                        const d = scoreData?.timeline?.find(e => e.label === 'Empréstimo Aprovado')?.date;
+                                        return d ? new Date(d).toLocaleDateString('pt-BR') : '15/01/2025';
+                                    })()}
                                 </p>
                             </div>
 
@@ -73,7 +124,10 @@ export default function StudentPage() {
                                 <CheckCircle2 className='text-success-green pt-1' size={20} />
                                 <p className='flex flex-col text-md'>
                                     <span className='text-black font-medium'>Matrícula Aprovada</span>
-                                    01/01/2025
+                                    {(() => {
+                                        const d = (scoreData?.timeline || []).find(e => e.label === 'Matrícula Aprovada')?.date;
+                                        return d ? new Date(d).toLocaleDateString('pt-BR') : '01/01/2025';
+                                    })()}
                                 </p>
                             </div>
 
@@ -83,7 +137,10 @@ export default function StudentPage() {
                                 </div>
                                 <p className='flex flex-col text-md'>
                                     <span className='text-black font-medium'>Matrícula Aprovada</span>
-                                    01/01/2025
+                                    {(() => {
+                                        const d = (scoreData?.timeline || []).find(e => e.label === 'Matrícula Aprovada')?.date;
+                                        return d ? new Date(d).toLocaleDateString('pt-BR') : '01/01/2025';
+                                    })()}
                                 </p>
                             </div>
 
@@ -91,7 +148,10 @@ export default function StudentPage() {
                                 <Clock className='pt-1' size={20} />
                                 <p className='flex flex-col text-md'>
                                     <span className='text-black font-medium'>Matrícula Aprovada</span>
-                                    01/01/2025
+                                    {(() => {
+                                        const d = (scoreData?.timeline || []).find(e => e.label === 'Matrícula Aprovada')?.date;
+                                        return d ? new Date(d).toLocaleDateString('pt-BR') : '01/01/2025';
+                                    })()}
                                 </p>
                             </div>
                         </div>
@@ -99,13 +159,17 @@ export default function StudentPage() {
                         <div className='w-full border border-border rounded-lg p-6 shadow-sm'>
                             <h3 className='text-left gap-2 text-2xl text-black font-medium'>Desempenho Acadêmico</h3>
                             <div className='mt-4 text-black font-medium'>
-                                <p className='w-ful flex justify-between'>Média Geral <span className='text-success-green'>9.2</span></p>
-                                <ProgressBar progress={92} />
+                                <p className='w-ful flex justify-between'>Média Geral <span className='text-success-green'>
+                                    {scoreData?.academic?.gradeAvg != null ? Number(scoreData.academic.gradeAvg).toFixed(1) : '-'}
+                                </span></p>
+                                <ProgressBar progress={Math.min(100, Math.max(0, Math.round(((scoreData?.academic?.gradeAvg ?? 0) <= 10 ? (scoreData.academic?.gradeAvg ?? 0) * 10 : (scoreData.academic?.gradeAvg ?? 0)))))} />
                             </div>
 
                             <div className='mt-8 text-black font-medium'>
-                                <p className='w-ful flex justify-between'>Frequência <span className='text-success-green'>95%</span></p>
-                                <ProgressBar progress={95} />
+                                <p className='w-ful flex justify-between'>Frequência <span className='text-success-green'>
+                                    {scoreData?.academic?.attendancePct != null ? `${Math.round(Number(scoreData.academic.attendancePct))}%` : '-'}
+                                </span></p>
+                                <ProgressBar progress={Math.min(100, Math.max(0, Math.round(Number(scoreData?.academic?.attendancePct ?? 0))))} />
                             </div>
 
                             <hr className='my-8 border border-border' />

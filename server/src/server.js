@@ -22,6 +22,9 @@ const PORT = config.server.port;
 // Middlewares de segurança
 app.use(helmet());
 
+// Desabilita ETag para evitar 304 e caches indesejados em respostas JSON
+app.set('etag', false);
+
 // CORS
 app.use(cors({
   origin: 'http://localhost:3000',

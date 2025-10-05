@@ -757,3 +757,13 @@
 {"installments":24,"level":"\u001b[32minfo\u001b[39m","loanId":2,"message":"\u001b[32m[PAYMENT-ROUTES] Plano de pagamento criado com sucesso\u001b[39m","timestamp":"2025-10-04 23:49:29"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 02:24:25"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 02:24:25"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 10:11:20"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 10:11:20"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 10:36:18"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 10:36:18"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 10:47:06"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 10:47:06"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 11:13:33"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 11:13:33"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 11:19:33"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 11:19:33"}
