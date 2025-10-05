@@ -2,7 +2,7 @@
 import CardFastAction from '@/app/components/CardFastAction'
 import CardInfoEmprestimo from '@/app/components/CardInfoEmprestimo'
 import Footer from '@/app/components/Footer'
-import Header from '@/app/components/Header'
+import HeaderInterna from '@/app/components/HeaderInterna'
 import ProgressBar from '@/app/components/ProgressBar'
 import Solicitation from './Solicitation'
 import { DollarSign, Clock, GraduationCap, CheckCircle2, AlertCircle, TrendingUp, FileText } from 'lucide-react'
@@ -21,17 +21,12 @@ export default function StudentPage() {
 
     return (
         <div className="min-h-screen w-screen bg-background mt-15">
-            <Header />
+            <HeaderInterna />
             <main className="flex flex-col items-center px-64 text-center text-gray-500 pt-8 space-y-8">
                 {/*Título*/}
-                <section className='w-full grid grid-cols-2 mt-8'>
-                    <div className='w-full text-left space-y-2'>
-                        <h1 className='text-4xl text-black font-bold'>Olá, Usuário!</h1>
-                        <p>Acompanhe seu financiamento e sesempenho acadêmico</p>
-                    </div>
-
+                <section className='w-full mt-8'>
                     <div className='w-full flex justify-end'>
-                        <button className='bg-white p-2 text-black rounded-lg hover:bg-primary hover:text-white' onClick={() => setShowPopup(!showPopup)}>Solicitar Crédito</button>
+                        <button className='bg-primary text-white p-2 text-black rounded-lg hover:shadow-md hover:bg-primary/85' onClick={() => setShowPopup(!showPopup)}>Solicitar Crédito</button>
                     </div>
                     <Solicitation showPopup={showPopup} setShowPopup={setShowPopup} institutions={institutions} scoreData={scoreData} onSubmit={(payload) => { console.log("Enviar pro backend:", payload); }} />
                 </section>

@@ -1,6 +1,6 @@
 "use client"
 import Footer from '@/app/components/Footer'
-import Header from '@/app/components/Header'
+import HeaderInterna from '@/app/components/HeaderInterna'
 import { DollarSign } from 'lucide-react'
 import { useState } from 'react'
 import GeneralVision from './GeneralVision'
@@ -15,7 +15,7 @@ export default function InvestorPage() {
 
     return (
         <div>
-            <Header />
+            <HeaderInterna />
             <main className='main-layout'>
                 {/*Header*/}
                 <section className='w-full grid grid-cols-2 mt-8'>
