@@ -1,12 +1,60 @@
+// investors.routes.js
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
-const { MatchingController } = require('../controllers/matching.controller');
+// const { MatchingController } = require('../controllers/matching.controller'); // (opcional, não usado aqui)
 
 const router = express.Router();
 
-// Aplicar autenticação e verificar role de investidor
+// ====== MIDDLEWARES GERAIS ======
 router.use(authenticateToken);
 router.use(requireRole(['investor']));
+
+// ====== MOCK SIMPLES DE INVESTIMENTOS ATIVOS ======
+// Em produção, isso viria do banco (matches/ofertas + parcelas em aberto).
+// Mantive um investorId para filtrar pelo usuário logado (req.user.id).
+const MOCK_ACTIVE_INVESTMENTS = [
+  {
+    id: 'match-001',
+    investorId: 1,
+    student_id: 101,
+    student_name: 'Ana Souza',
+    course: 'Engenharia de Software',
+    amount: 15000,
+    status: 'active',
+    startedAt: '2025-07-15',
+    expectedAPR: 0.125, // 12.5% a.a. (exemplo)
+  },
+  {
+    id: 'match-002',
+    investorId: 1,
+    student_id: 102,
+    student_name: 'Carlos Lima',
+    course: 'Administração',
+    amount: 20000,
+    status: 'active',
+    startedAt: '2025-08-01',
+    expectedAPR: 0.108, // 10.8% a.a.
+  },
+  {
+    id: 'match-003',
+    investorId: 2, // outro investidor
+    student_id: 103,
+    student_name: 'Joana Mendes',
+    course: 'Direito',
+    amount: 18000,
+    status: 'active',
+    startedAt: '2025-08-10',
+    expectedAPR: 0.12,
+  },
+];
+
+// Helper: formata a lista "limpa" (sem investorId) para resposta
+function sanitizeInvestment(i) {
+  const { investorId, ...rest } = i;
+  return rest;
+}
+
+// ====== ROTAS DO INVESTIDOR ======
 
 /**
  * @route   GET /api/investors/profile
@@ -16,11 +64,11 @@ router.use(requireRole(['investor']));
 router.get('/profile', (req, res) => {
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Perfil do investidor',
+    message: 'Perfil do investidor',
     data: {
       user: req.user,
-      note: 'Implementar lógica para buscar dados completos do investidor'
-    }
+      note: 'Implementar lógica para buscar dados completos do investidor',
+    },
   });
 });
 
@@ -32,11 +80,11 @@ router.get('/profile', (req, res) => {
 router.get('/offers', (req, res) => {
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Ofertas do investidor',
+    message: 'Ofertas do investidor',
     data: {
       offers: [],
-      note: 'Implementar lógica para buscar ofertas do investidor'
-    }
+      note: 'Implementar lógica para buscar ofertas do investidor',
+    },
   });
 });
 
@@ -48,31 +96,48 @@ router.get('/offers', (req, res) => {
 router.post('/offers', (req, res) => {
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Criar oferta',
+    message: 'Criar oferta (placeholder)',
     data: {
-      note: 'Implementar lógica para criar nova oferta de investimento'
-    }
+      note: 'Implementar lógica para criar nova oferta de investimento',
+    },
   });
 });
 
 /**
  * @route   GET /api/investors/portfolio
- * @desc    Obter portfólio de investimentos
+ * @desc    Obter portfólio de investimentos (agregado + lista de ativos)
  * @access  Private (Investor)
+ *
+ * ✅ Simples: retorna totalInvested, activeLoans e a lista activeInvestments
+ *    construída a partir do MOCK, filtrando por req.user.id.
  */
 router.get('/portfolio', (req, res) => {
+  const investorId = Number(req.user?.id) || req.user?.id; // dependendo de como o id vem no token
+  const myActive = MOCK_ACTIVE_INVESTMENTS
+    .filter(i => i.investorId === investorId && i.status === 'active')
+    .map(sanitizeInvestment);
+
+  const totalInvested = myActive.reduce((acc, i) => acc + (Number(i.amount) || 0), 0);
+  const activeLoans = myActive.length;
+
+  // Retorno (returns) e risco (risk) são placeholders aqui.
+  // Você pode calcular returns reais depois (ex.: parcelas pagas - principal).
+  const returns = 0;
+  const risk = activeLoans <= 1 ? 'low' : activeLoans <= 3 ? 'moderate' : 'high';
+
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Portfólio do investidor',
+    message: 'Portfólio do investidor',
     data: {
       portfolio: {
-        totalInvested: 0,
-        activeLoans: 0,
-        returns: 0,
-        risk: 'low'
+        totalInvested,
+        activeLoans,
+        returns,
+        risk,
+        activeInvestments: myActive, // 👈 lista dos investimentos ATIVOS
       },
-      note: 'Implementar lógica para calcular métricas do portfólio'
-    }
+      note: 'Métrica simples baseada em mock; integrar com DB quando possível',
+    },
   });
 });
 
@@ -84,11 +149,11 @@ router.get('/portfolio', (req, res) => {
 router.get('/returns', (req, res) => {
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Retornos do investidor',
+    message: 'Retornos do investidor',
     data: {
       returns: [],
-      note: 'Implementar lógica para calcular retornos dos investimentos'
-    }
+      note: 'Implementar lógica para calcular retornos dos investimentos',
+    },
   });
 });
 
@@ -100,15 +165,15 @@ router.get('/returns', (req, res) => {
 router.get('/analytics', (req, res) => {
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Analytics do investidor',
+    message: 'Analytics do investidor',
     data: {
       analytics: {
         riskDistribution: {},
         performanceMetrics: {},
-        marketInsights: {}
+        marketInsights: {},
       },
-      note: 'Implementar lógica para analytics avançados'
-    }
+      note: 'Implementar lógica para analytics avançados',
+    },
   });
 });
 
@@ -122,8 +187,8 @@ router.get('/analytics', (req, res) => {
 router.get('/:investorId/offers/:offerId/eligible-loans', (req, res) => {
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Empréstimos elegíveis',
-    data: { eligibleLoans: [] }
+    message: 'Empréstimos elegíveis (placeholder)',
+    data: { eligibleLoans: [] },
   });
 });
 
@@ -135,8 +200,8 @@ router.get('/:investorId/offers/:offerId/eligible-loans', (req, res) => {
 router.get('/:investorId/matching-stats', (req, res) => {
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Estatísticas de matching',
-    data: { stats: {} }
+    message: 'Estatísticas de matching (placeholder)',
+    data: { stats: {} },
   });
 });
 
@@ -148,8 +213,8 @@ router.get('/:investorId/matching-stats', (req, res) => {
 router.post('/:investorId/offers/:offerId/validate-investment', (req, res) => {
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Validação de investimento',
-    data: { valid: true }
+    message: 'Validação de investimento (placeholder)',
+    data: { valid: true },
   });
 });
 
@@ -161,8 +226,8 @@ router.post('/:investorId/offers/:offerId/validate-investment', (req, res) => {
 router.post('/:investorId/offers/:offerId/execute-match', (req, res) => {
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Executar match',
-    data: { matchId: 'mock-match-id' }
+    message: 'Executar match (placeholder)',
+    data: { matchId: 'mock-match-id' },
   });
 });
 
@@ -174,8 +239,8 @@ router.post('/:investorId/offers/:offerId/execute-match', (req, res) => {
 router.get('/:investorId/matches', (req, res) => {
   res.json({
     success: true,
-    message: 'Endpoint placeholder - Matches do investidor',
-    data: { matches: [] }
+    message: 'Matches do investidor (placeholder)',
+    data: { matches: [] },
   });
 });
 

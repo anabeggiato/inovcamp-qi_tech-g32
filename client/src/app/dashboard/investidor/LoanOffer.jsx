@@ -1,14 +1,17 @@
 "use client";
-import React, { useMemo, useState, Fragment } from "react";
+import React, { useState, Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { ChevronDown, Check, X } from "lucide-react";
+import { http } from "@/services/http";
 
+// 🔹 Opções do seletor "início do pagamento"
 const START_OPTS = [
   { id: "any",    label: "Sem Preferência" },
   { id: "during", label: "Durante a Graduação" },
   { id: "after",  label: "Após a Graduação" },
 ];
 
+// 🔹 Limites de valores
 const RULES = {
   amountMin: 1000,
   amountMax: 50000,
@@ -16,6 +19,7 @@ const RULES = {
   termMax: 60,
 };
 
+// 🔹 Subcomponente para o dropdown
 function StartPaySelect({ value, onChange }) {
   return (
     <Listbox value={value} onChange={onChange}>
@@ -38,8 +42,7 @@ function StartPaySelect({ value, onChange }) {
                 value={opt}
                 className={({ active }) =>
                   [
-                    "cursor-pointer select-none text-sm px-3 py-2 mx-1 flex items-center justify-between",
-                    "rounded-lg",
+                    "cursor-pointer select-none text-sm px-3 py-2 mx-1 flex items-center justify-between rounded-lg",
                     active ? "bg-[var(--primary)] text-white" : "text-gray-800 hover:bg-gray-50",
                   ].join(" ")
                 }
@@ -61,25 +64,22 @@ function StartPaySelect({ value, onChange }) {
   );
 }
 
-/**
- * Props:
- * - showPopup: boolean        -> controla a visibilidade
- * - setShowPopup: fn(bool)    -> para abrir/fechar
- * - onSubmit?: fn(payload)    -> (opcional) recebe o payload válido
- */
 export default function LoanOffer({ showPopup, setShowPopup, onSubmit }) {
   if (!showPopup) return null;
 
-  // States do form (prontos pro backend)
+  // form
   const [amount, setAmount] = useState("");
   const [term, setTerm] = useState("");
   const [startPay, setStartPay] = useState(START_OPTS[0]);
 
-  // States de validação
+  // validação
   const [errors, setErrors] = useState({ amount: "", term: "" });
   const [touched, setTouched] = useState({ amount: false, term: false });
 
-  // Helpers
+  // UX
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
   const parseNumber = (v) => (v === "" || v == null ? NaN : Number(v));
 
   const validateAmount = (raw) => {
@@ -99,7 +99,6 @@ export default function LoanOffer({ showPopup, setShowPopup, onSubmit }) {
     return "";
   };
 
-  // Validação em tempo real
   const onAmountChange = (e) => {
     const val = e.target.value;
     setAmount(val);
@@ -120,56 +119,64 @@ export default function LoanOffer({ showPopup, setShowPopup, onSubmit }) {
 
   const isValid = !validateAmount(amount) && !validateTerm(term);
 
-  // Payload pronto pro backend
+  // payload no formato que o back espera
   const payload = {
-    amount: parseNumber(amount),       // número (ex: 15000)
-    termMonths: parseNumber(term),     // número inteiro
-    startPaymentTiming: startPay?.id,  // "any" | "during" | "after"
+    amount: parseNumber(amount),
+    termMonths: parseNumber(term),
+    startPaymentTiming: startPay?.id, // "any" | "during" | "after"
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // força validação final
+
+    // valida final
     const aErr = validateAmount(amount);
     const tErr = validateTerm(term);
     setErrors({ amount: aErr, term: tErr });
     setTouched({ amount: true, term: true });
     if (aErr || tErr) return;
 
-    // dispara callback opcional para quem chamou
-    onSubmit?.(payload);
+    setSubmitting(true);
+    setSubmitError("");
 
-    // fecha o popup
-    setShowPopup(false);
+    try {
+      // POST /api/investors/offers
+      const res = await http.post("/investors/offers", payload);
+
+      const created =
+        res?.data?.offer ||
+        res?.data?.createdOffer ||
+        res?.data ||
+        res;
+
+      onSubmit?.(created);
+      setShowPopup(false);
+    } catch (err) {
+      console.error("Erro ao criar oferta:", err);
+      setSubmitError(err?.message || "Erro ao criar oferta.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const close = () => setShowPopup(false);
 
   return (
-    <div
-      className="fixed inset-0 bg-gray-400/75 z-50 flex items-center justify-center"
-      onClick={close} // clique no overlay fecha
-    >
+    <div className="fixed inset-0 bg-gray-400/75 z-50 flex items-center justify-center" onClick={close}>
       <form
         onSubmit={handleSubmit}
         className="bg-white shadow-lg rounded-lg p-8 w-[40%] space-y-4"
-        onClick={(e) => e.stopPropagation()} // impede fechar ao clicar dentro
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Oferecer um novo empréstimo</h3>
-          <button
-            type="button"
-            onClick={close}
-            className="p-2 rounded-md hover:bg-gray-100"
-            aria-label="Fechar"
-            title="Fechar"
-          >
+          <button type="button" onClick={close} className="p-2 rounded-md hover:bg-gray-100" aria-label="Fechar" title="Fechar">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Valor do empréstimo */}
+        {/* Valor */}
         <div className="flex flex-col w-full text-left">
           <label className="text-sm mb-1">
             Valor do empréstimo{" "}
@@ -186,21 +193,17 @@ export default function LoanOffer({ showPopup, setShowPopup, onSubmit }) {
             value={amount}
             onChange={onAmountChange}
             onBlur={() => onBlurField("amount")}
-            className={`p-2 border rounded-lg ${
-              errors.amount ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-[var(--primary)]"
-            } focus:outline-none focus:ring-2`}
+            className={`p-2 border rounded-lg ${errors.amount ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-[var(--primary)]"} focus:outline-none focus:ring-2`}
             placeholder="Ex.: 15000"
           />
           {errors.amount && <span className="text-xs text-red-600 mt-1">{errors.amount}</span>}
         </div>
 
-        {/* Prazo de pagamento */}
+        {/* Prazo */}
         <div className="flex flex-col w-full text-left">
           <label className="text-sm mb-1">
             Prazo de pagamento{" "}
-            <span className="text-gray-400">
-              (mín {RULES.termMin} | máx {RULES.termMax} meses)
-            </span>
+            <span className="text-gray-400">(mín {RULES.termMin} | máx {RULES.termMax} meses)</span>
           </label>
           <input
             type="number"
@@ -211,37 +214,32 @@ export default function LoanOffer({ showPopup, setShowPopup, onSubmit }) {
             value={term}
             onChange={onTermChange}
             onBlur={() => onBlurField("term")}
-            className={`p-2 border rounded-lg ${
-              errors.term ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-[var(--primary)]"
-            } focus:outline-none focus:ring-2`}
+            className={`p-2 border rounded-lg ${errors.term ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-[var(--primary)]"} focus:outline-none focus:ring-2`}
             placeholder="Ex.: 24"
           />
           {errors.term && <span className="text-xs text-red-600 mt-1">{errors.term}</span>}
         </div>
 
-        {/* Tempo para início do pagamento */}
+        {/* Início do pagamento */}
         <div className="flex flex-col w-full text-left">
           <label className="text-sm mb-1">Tempo para início do pagamento</label>
           <StartPaySelect value={startPay} onChange={setStartPay} />
         </div>
 
+        {/* Erro de submissão */}
+        {submitError && <div className="text-sm text-red-600">{submitError}</div>}
+
         {/* Ações */}
         <div className="flex items-center justify-end gap-3 pt-2">
-          <button
-            type="button"
-            className="px-4 py-2 rounded-md border border-border hover:bg-gray-50"
-            onClick={close}
-          >
+          <button type="button" className="px-4 py-2 rounded-md border border-border hover:bg-gray-50" onClick={close} disabled={submitting}>
             Cancelar
           </button>
           <button
             type="submit"
-            disabled={!isValid}
-            className={`px-4 py-2 rounded-md text-white ${
-              isValid ? "bg-[var(--primary)] hover:opacity-90" : "bg-gray-300 cursor-not-allowed"
-            }`}
+            disabled={!isValid || submitting}
+            className={`px-4 py-2 rounded-md text-white ${isValid && !submitting ? "bg-[var(--primary)] hover:opacity-90" : "bg-gray-300 cursor-not-allowed"}`}
           >
-            Oferecer
+            {submitting ? "Enviando..." : "Oferecer"}
           </button>
         </div>
       </form>

@@ -11,7 +11,7 @@ import LoanOffer from './LoanOffer'
 
 export default function InvestorPage() {
 
-    const [vision, setVision] = useState('opportunities')
+    const [vision, setVision] = useState('general')
     const [showOffer, setShowOffer] = useState(false);
 
     return (
@@ -27,14 +27,6 @@ export default function InvestorPage() {
                             </h1>
                             <p>{vision === "general" ? "Acompanhe seus investimentos e retornos" : "Encontre estudantes alinhados com seu perfil de investimento"}</p>
                         </div>
-
-                        <div className='w-full flex items-center justify-end'>
-                            <button className='flex items-center bg-second-gradient p-2 py-1 text-white rounded-lg text-sm gap-2 hover:shadow-md' onClick={() => setShowOffer(!showOffer)}>
-                                <DollarSign size={16} /> Oferecer empréstimo
-                            </button>
-                        </div>
-                        {showOffer && <LoanOffer showPopup={showOffer} setShowPopup={setShowOffer} onSubmit={(payload) => { console.log("Enviar pro backend:", payload); }}
-                        />}
                     </section>
 
                     <div className='w-full flex items-start '>
