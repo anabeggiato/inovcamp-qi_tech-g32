@@ -6,7 +6,7 @@ export default function Header() {
 
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border 
-                grid grid-cols-3 items-center px-16">
+                grid grid-cols-[25%_50%_25%] items-center px-64">
 
             {/* logo */}
             <div className="flex items-center justify-start h-16" onClick={() => router.push("/")}>
@@ -17,7 +17,7 @@ export default function Header() {
             </div>
 
             {/* menu central */}
-            <div className="flex items-center justify-center space-x-6 text-gray-600">
+            <div className="flex items-center justify-center space-x-6 text-gray-600 text-center">
                 <p className='hover:text-black hover:cursor-pointer' onClick={() => router.push("/funcionamento")}>Como Funciona</p>
                 <p className='hover:text-black hover:cursor-pointer' onClick={() => router.push("/para-estudantes")}>Para Estudantes</p>
                 <p className='hover:text-black hover:cursor-pointer' onClick={() => router.push("/para-investidores")}>Para Investidores</p>
