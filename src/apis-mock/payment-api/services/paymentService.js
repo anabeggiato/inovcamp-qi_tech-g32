@@ -177,8 +177,8 @@ function createDuringStudiesPlan(loan, baseInterestRate) {
         monthlyPayment: calculation.monthlyPayment,
         interestRate: interestRate,
         discount: '5%',
-        firstPayment: installments[0].due_date,
-        lastPayment: installments[installments.length - 1].due_date,
+        firstPayment: installments.length > 0 ? installments[0].due_date : null,
+        lastPayment: installments.length > 0 ? installments[installments.length - 1].due_date : null,
         installments: installments.length,
         installmentsList: installments
     };
@@ -226,8 +226,8 @@ function createAfterGraduationPlan(loan, baseInterestRate) {
         monthlyPayment: calculation.monthlyPayment,
         interestRate: interestRate,
         gracePeriod: gracePeriod,
-        firstPayment: installments[0].due_date,
-        lastPayment: installments[installments.length - 1].due_date,
+        firstPayment: installments.length > 0 ? installments[0].due_date : null,
+        lastPayment: installments.length > 0 ? installments[installments.length - 1].due_date : null,
         installments: installments.length,
         installmentsList: installments
     };
@@ -480,7 +480,7 @@ function orchestratePayment(paymentData) {
     try {
         // 1. Valida saldo na conta de origem
         const fromBalance = custodyService.getAccountBalance(fromAccount);
-        if (fromBalance.availableBalance < amount) {
+        if (!fromBalance || fromBalance.availableBalance < amount) {
             throw new Error('Saldo insuficiente para pagamento');
         }
 

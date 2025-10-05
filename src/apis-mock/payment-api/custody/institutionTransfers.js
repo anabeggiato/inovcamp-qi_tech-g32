@@ -3,7 +3,7 @@ const { query, transaction } = require('../../shared/database');
 const { createServiceLogger } = require('../../shared/logger');
 
 /**
- * Sistema de Transferências para Instituições
+ * Sistema de Transferências para Instituições - VERSÃO CORRIGIDA
  * Gerencia o fluxo de repasse de empréstimos para faculdades
  */
 
@@ -23,10 +23,10 @@ async function processLoanTransfer(transferData) {
         // 1. Valida empréstimo e instituição
         const loanResult = await query(`
       SELECT 
-        l.id, l.amount, l.status, l.student_id,
+        l.id, l.amount, l.status, l.borrower_id,
         u.name as student_name, u.email as student_email
       FROM loans l
-      JOIN users u ON u.id = l.student_id
+      JOIN users u ON u.id = l.borrower_id
       WHERE l.id = $1
     `, [loanId]);
 
@@ -37,7 +37,7 @@ async function processLoanTransfer(transferData) {
         const loan = loanResult.rows[0];
 
         const institutionResult = await query(`
-      SELECT id, name, email, account_number
+      SELECT id, name, integration_meta
       FROM institutions 
       WHERE id = $1
     `, [institutionId]);
@@ -48,103 +48,79 @@ async function processLoanTransfer(transferData) {
 
         const institution = institutionResult.rows[0];
 
-        // 2. Verifica se há saldo suficiente (do investidor)
-        const balanceResult = await query(`
-      SELECT SUM(balance) as total_balance
-      FROM balances
-      WHERE user_id IN (
-        SELECT investor_id FROM matches WHERE loan_id = $1
-      )
-    `, [loanId]);
-
-        const totalBalance = parseFloat(balanceResult.rows[0].total_balance || 0);
-
-        if (totalBalance < amount) {
-            throw new Error('Saldo insuficiente para transferência');
+        // 2. Verifica se o empréstimo está aprovado
+        if (loan.status !== 'approved' && loan.status !== 'matched') {
+            throw new Error('Empréstimo não está aprovado para transferência');
         }
 
-        // 3. Processa transferência
+        // 3. Verifica se há saldo suficiente na custódia
+        const custodyResult = await query(`
+      SELECT available_balance, total_balance
+      FROM custody_accounts 
+      WHERE id = 'custody_loan_${loanId}'
+    `);
+
+        if (custodyResult.rows.length === 0) {
+            throw new Error('Conta de custódia do empréstimo não encontrada');
+        }
+
+        const custodyBalance = parseFloat(custodyResult.rows[0].available_balance || 0);
+        if (custodyBalance < amount) {
+            throw new Error('Saldo insuficiente na custódia para transferência');
+        }
+
+        // 4. Processa transferência
         await transaction(async (client) => {
             // Atualiza status do empréstimo
             await client.query(`
         UPDATE loans 
-        SET status = 'disbursed', disbursed_at = NOW()
+        SET status = 'disbursed'
         WHERE id = $1
       `, [loanId]);
 
             // Cria conta de custódia para instituição se não existir
             await client.query(`
-        INSERT INTO balances (user_id, balance, created_at, updated_at)
-        VALUES ($1, 0, NOW(), NOW())
-        ON CONFLICT (user_id) DO NOTHING
-      `, [institutionId]);
+        INSERT INTO custody_accounts (id, user_id, user_type, available_balance, blocked_amount, total_balance, status)
+        VALUES ($1, $2, 'institution', 0, 0, 0, 'active')
+        ON CONFLICT (id) DO NOTHING
+      `, [`institution_${institutionId}`, institutionId]);
 
-            // Transfere valor para instituição
+            // Debita da custódia do empréstimo
             await client.query(`
-        UPDATE balances 
-        SET balance = balance + $1, updated_at = NOW()
-        WHERE user_id = $1
-      `, [institutionId, amount]);
+        UPDATE custody_accounts 
+        SET available_balance = available_balance - $1,
+            total_balance = total_balance - $1,
+            updated_at = NOW()
+        WHERE id = 'custody_loan_${loanId}'
+      `, [amount]);
 
-            // Debita dos investidores (proporcionalmente)
-            const matchesResult = await client.query(`
-        SELECT investor_id, amount as invested_amount
-        FROM matches 
-        WHERE loan_id = $1
-      `, [loanId]);
-
-            for (const match of matchesResult.rows) {
-                const proportionalAmount = (match.invested_amount / loan.amount) * amount;
-
-                await client.query(`
-          UPDATE balances 
-          SET balance = balance - $1, updated_at = NOW()
-          WHERE user_id = $2
-        `, [proportionalAmount, match.investor_id]);
-            }
+            // Credita na conta da instituição
+            await client.query(`
+        UPDATE custody_accounts 
+        SET available_balance = available_balance + $1,
+            total_balance = total_balance + $1,
+            updated_at = NOW()
+        WHERE id = $2
+      `, [amount, `institution_${institutionId}`]);
 
             // Registra no ledger
             await client.query(`
-        INSERT INTO ledger (
-          from_account, to_account, amount, description,
-          transaction_type, category, subcategory, loan_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      `, [
-                'investor_custody', // Conta de custódia dos investidores
-                `institution_${institutionId}`, // Conta da instituição
-                amount,
-                `Repasse empréstimo ${loanId} - ${description}`,
-                'transfer',
-                'loan_disbursement',
-                'institution_transfer',
-                loanId
-            ]);
+        INSERT INTO ledger (account_type, user_id, account_ref, amount, dc, ref, description, transaction_type, category, subcategory, external_reference, loan_id)
+        VALUES ('custody', $1, $2, $3, 'D', $4, $5, 'escrow_transfer', 'principal', 'loan_disbursement', $4, $6)
+      `, [institutionId, `institution_${institutionId}`, amount, transferId, description, loanId]);
 
-            // Registra taxa de originação (QI-EDU)
-            const originationFee = amount * 0.02; // 2% de taxa de originação
+            // Registra entrada de crédito
             await client.query(`
-        INSERT INTO ledger (
-          from_account, to_account, amount, description,
-          transaction_type, category, subcategory, loan_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      `, [
-                `institution_${institutionId}`,
-                'qi_edu_revenue',
-                originationFee,
-                `Taxa de originação - Empréstimo ${loanId}`,
-                'fee',
-                'platform_fee',
-                'origination_fee',
-                loanId
-            ]);
+        INSERT INTO ledger (account_type, user_id, account_ref, amount, dc, ref, description, transaction_type, category, subcategory, external_reference, loan_id)
+        VALUES ('custody', $1, $2, $3, 'C', $4, $5, 'escrow_transfer', 'principal', 'loan_disbursement', $4, $6)
+      `, [institutionId, `institution_${institutionId}`, amount, transferId, description, loanId]);
         });
 
-        logger.info(`Transferência processada`, {
+        logger.info('Transferência processada com sucesso', {
+            transferId,
             loanId,
             institutionId,
-            amount,
-            transferId,
-            studentName: loan.student_name
+            amount
         });
 
         return {
@@ -158,14 +134,14 @@ async function processLoanTransfer(transferData) {
             status: 'completed',
             timestamp: new Date().toISOString(),
             student: {
-                id: loan.student_id,
+                id: loan.borrower_id,
                 name: loan.student_name,
                 email: loan.student_email
             },
             institution: {
                 id: institution.id,
                 name: institution.name,
-                accountNumber: institution.account_number
+                integrationMeta: institution.integration_meta
             }
         };
 
@@ -181,7 +157,35 @@ async function processLoanTransfer(transferData) {
 }
 
 /**
- * Lista transferências de uma instituição
+ * Consulta saldo da instituição
+ */
+async function getInstitutionBalance(institutionId) {
+    try {
+        const result = await query(`
+      SELECT 
+        i.id,
+        i.name,
+        i.integration_meta,
+        COALESCE(ca.available_balance, 0) as balance,
+        i.created_at
+      FROM institutions i
+      LEFT JOIN custody_accounts ca ON ca.id = 'institution_${institutionId}'
+      WHERE i.id = $1
+    `, [institutionId]);
+
+        if (result.rows.length === 0) {
+            throw new Error('Instituição não encontrada');
+        }
+
+        return result.rows[0];
+    } catch (error) {
+        logger.error('Erro ao consultar saldo', { institutionId, error: error.message });
+        throw error;
+    }
+}
+
+/**
+ * Lista transferências da instituição
  */
 async function getInstitutionTransfers(institutionId, limit = 50) {
     try {
@@ -195,9 +199,9 @@ async function getInstitutionTransfers(institutionId, limit = 50) {
         u.name as student_name
       FROM ledger l
       JOIN loans lo ON lo.id = l.loan_id
-      JOIN users u ON u.id = lo.student_id
-      WHERE l.to_account = $1
-      AND l.transaction_type = 'transfer'
+      JOIN users u ON u.id = lo.borrower_id
+      WHERE l.account_ref = $1
+      AND l.transaction_type = 'escrow_transfer'
       ORDER BY l.created_at DESC
       LIMIT $2
     `, [`institution_${institutionId}`, limit]);
@@ -205,34 +209,6 @@ async function getInstitutionTransfers(institutionId, limit = 50) {
         return result.rows;
     } catch (error) {
         logger.error('Erro ao buscar transferências', { institutionId, error: error.message });
-        throw error;
-    }
-}
-
-/**
- * Consulta saldo de instituição
- */
-async function getInstitutionBalance(institutionId) {
-    try {
-        const result = await query(`
-      SELECT 
-        i.id,
-        i.name,
-        i.email,
-        COALESCE(b.balance, 0) as balance,
-        i.created_at
-      FROM institutions i
-      LEFT JOIN balances b ON b.user_id = i.id
-      WHERE i.id = $1
-    `, [institutionId]);
-
-        if (result.rows.length === 0) {
-            throw new Error('Instituição não encontrada');
-        }
-
-        return result.rows[0];
-    } catch (error) {
-        logger.error('Erro ao consultar saldo', { institutionId, error: error.message });
         throw error;
     }
 }
@@ -249,46 +225,45 @@ async function processStudentPayment(paymentData) {
         const paymentId = generateId('PAY');
 
         await transaction(async (client) => {
-            // Debita do estudante
+            // Debita do estudante na conta de custódia
             await client.query(`
-        UPDATE balances 
-        SET balance = balance - $1, updated_at = NOW()
-        WHERE user_id = $2
-      `, [amount, studentId]);
+        UPDATE custody_accounts 
+        SET available_balance = available_balance - $1,
+            total_balance = total_balance - $1,
+            updated_at = NOW()
+        WHERE id = $2
+      `, [amount, `user_${studentId}`]);
 
             // Credita na instituição
             await client.query(`
-        UPDATE balances 
-        SET balance = balance + $1, updated_at = NOW()
-        WHERE user_id = $2
-      `, [amount, institutionId]);
+        UPDATE custody_accounts 
+        SET available_balance = available_balance + $1,
+            total_balance = total_balance + $1,
+            updated_at = NOW()
+        WHERE id = $2
+      `, [amount, `institution_${institutionId}`]);
 
             // Registra no ledger
             await client.query(`
-        INSERT INTO ledger (
-          from_account, to_account, amount, description,
-          transaction_type, category, subcategory, installment_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      `, [
-                `student_${studentId}`,
-                `institution_${institutionId}`,
-                amount,
-                `Pagamento parcela - ${description}`,
-                'payment',
-                'student_payment',
-                'installment_payment',
-                installmentId
-            ]);
+        INSERT INTO ledger (account_type, user_id, account_ref, amount, dc, ref, description, transaction_type, category, subcategory, installment_id)
+        VALUES ('custody', $1, $2, $3, 'D', $4, $5, 'payment', 'student_payment', 'installment_payment', $6)
+      `, [studentId, `user_${studentId}`, amount, paymentId, description, installmentId]);
+
+            // Registra entrada de crédito
+            await client.query(`
+        INSERT INTO ledger (account_type, user_id, account_ref, amount, dc, ref, description, transaction_type, category, subcategory, installment_id)
+        VALUES ('custody', $1, $2, $3, 'C', $4, $5, 'payment', 'student_payment', 'installment_payment', $6)
+      `, [institutionId, `institution_${institutionId}`, amount, paymentId, description, installmentId]);
 
             // Atualiza status da parcela
             await client.query(`
         UPDATE installments 
-        SET status = 'paid', paid_at = NOW()
+        SET status = 'paid', payment_date = NOW()
         WHERE id = $1
       `, [installmentId]);
         });
 
-        logger.info(`Pagamento de estudante processado`, {
+        logger.info('Pagamento de estudante processado', {
             studentId,
             institutionId,
             amount,
@@ -319,8 +294,7 @@ async function processStudentPayment(paymentData) {
 
 module.exports = {
     processLoanTransfer,
-    getInstitutionTransfers,
     getInstitutionBalance,
+    getInstitutionTransfers,
     processStudentPayment
 };
-

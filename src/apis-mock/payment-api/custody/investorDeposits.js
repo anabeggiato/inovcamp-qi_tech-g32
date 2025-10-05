@@ -22,9 +22,9 @@ async function processInvestorDeposit(depositData) {
 
         // 1. Valida se o investidor existe
         const investorResult = await query(`
-      SELECT id, name, email, balance 
+      SELECT id, name, email 
       FROM users 
-      WHERE id = $1 AND user_type = 'investor'
+      WHERE id = $1 AND (role = 'investor' OR user_type = 'investor')
     `, [investorId]);
 
         if (investorResult.rows.length === 0) {
@@ -45,49 +45,67 @@ async function processInvestorDeposit(depositData) {
 
         // 4. Atualiza saldo na custódia
         await transaction(async (client) => {
-            // Atualiza saldo do investidor
+            // Atualiza saldo do investidor na conta de custódia
             await client.query(`
-        UPDATE users 
-        SET balance = balance + $1 
+        UPDATE custody_accounts 
+        SET available_balance = available_balance + $1,
+            total_balance = total_balance + $1,
+            updated_at = NOW()
         WHERE id = $2
-      `, [amount, investorId]);
+      `, [amount, `user_${investorId}`]);
 
             // Registra no ledger
             await client.query(`
         INSERT INTO ledger (
-          from_account, to_account, amount, description, 
-          transaction_type, category, subcategory
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+          account_type, user_id, account_ref, amount, dc, ref, description, 
+          transaction_type, category, subcategory, external_reference
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       `, [
-                'external_bank', // Conta externa (banco do investidor)
-                `investor_${investorId}`, // Conta do investidor
+                'custody',
+                investorId,
+                `investor_${investorId}`,
                 amount,
+                'C', // Crédito
+                depositId,
                 `Depósito investidor - ${description}`,
                 'deposit',
                 'investor_funding',
-                'deposit'
+                'deposit',
+                paymentResult.externalTransactionId
             ]);
 
             // Registra transação de pagamento
             await client.query(`
         INSERT INTO payment_transactions (
           payment_method_id, amount, status, 
-          external_transaction_id, description
-        ) VALUES ($1, $2, $3, $4, $5)
+          external_transaction_id, description, payment_id
+        ) VALUES ($1, $2, $3, $4, $5, $6)
       `, [
-                paymentResult.paymentMethodId,
+                null, // payment_method_id pode ser NULL
                 amount,
                 'completed',
                 paymentResult.externalTransactionId,
-                description
+                description,
+                paymentResult.paymentMethodId // Usar como payment_id (text)
             ]);
         });
+
+        // Busca saldo atual da conta de custódia
+        const balanceResult = await query(`
+            SELECT available_balance 
+            FROM custody_accounts 
+            WHERE id = $1
+        `, [`user_${investorId}`]);
+        
+        const currentBalance = balanceResult.rows.length > 0 ? 
+            parseFloat(balanceResult.rows[0].available_balance || 0) : 0;
+        const newBalance = currentBalance + amount;
 
         logger.info(`Depósito processado`, {
             investorId,
             amount,
             depositId,
-            newBalance: parseFloat(investor.balance) + amount
+            newBalance
         });
 
         return {
@@ -95,7 +113,7 @@ async function processInvestorDeposit(depositData) {
             depositId,
             investorId,
             amount,
-            newBalance: parseFloat(investor.balance) + amount,
+            newBalance,
             paymentMethod: paymentResult.method,
             status: 'completed',
             timestamp: new Date().toISOString()
@@ -111,11 +129,13 @@ async function processInvestorDeposit(depositData) {
  * Busca ou cria conta de custódia para investidor
  */
 async function getOrCreateCustodyAccount(userId, userType) {
+    const accountId = `user_${userId}`;
+    
     // Verifica se já existe conta de custódia
     const existingAccount = await query(`
-    SELECT * FROM balances 
-    WHERE user_id = $1
-  `, [userId]);
+    SELECT * FROM custody_accounts 
+    WHERE id = $1
+  `, [accountId]);
 
     if (existingAccount.rows.length > 0) {
         return existingAccount.rows[0];
@@ -123,11 +143,19 @@ async function getOrCreateCustodyAccount(userId, userType) {
 
     // Cria nova conta de custódia
     await query(`
-    INSERT INTO balances (user_id, balance, created_at, updated_at)
-    VALUES ($1, 0, NOW(), NOW())
-  `, [userId]);
+    INSERT INTO custody_accounts (id, user_id, user_type, available_balance, blocked_amount, total_balance, status, created_at, updated_at)
+    VALUES ($1, $2, $3, 0, 0, 0, 'active', NOW(), NOW())
+  `, [accountId, userId, userType]);
 
-    return { user_id: userId, balance: 0 };
+    return { 
+        id: accountId, 
+        user_id: userId, 
+        user_type: userType,
+        available_balance: 0, 
+        blocked_amount: 0,
+        total_balance: 0,
+        status: 'active'
+    };
 }
 
 /**
@@ -137,12 +165,21 @@ async function processPaymentMethod(method, amount, description) {
     const paymentMethodId = generateId('PM');
     const externalTransactionId = generateId('EXT');
 
+    // Mapear métodos para IDs numéricos
+    const methodIds = {
+        'pix': 1,
+        'ted': 2,
+        'boleto': 3,
+        'credit_card': 4,
+        'debit_card': 5
+    };
+
     // Simula diferentes métodos de pagamento
     switch (method) {
         case 'pix':
             return {
                 success: true,
-                paymentMethodId,
+                paymentMethodId: methodIds.pix,
                 externalTransactionId,
                 method: 'pix',
                 processingTime: 'instant'
@@ -151,7 +188,7 @@ async function processPaymentMethod(method, amount, description) {
         case 'ted':
             return {
                 success: true,
-                paymentMethodId,
+                paymentMethodId: methodIds.ted,
                 externalTransactionId,
                 method: 'ted',
                 processingTime: '1-2 business days'
@@ -160,7 +197,7 @@ async function processPaymentMethod(method, amount, description) {
         case 'boleto':
             return {
                 success: true,
-                paymentMethodId,
+                paymentMethodId: methodIds.boleto,
                 externalTransactionId,
                 method: 'boleto',
                 processingTime: '1-3 business days'
@@ -189,7 +226,7 @@ async function getInvestorDeposits(investorId, limit = 50) {
         pt.created_at,
         l.description as ledger_description
       FROM payment_transactions pt
-      LEFT JOIN ledger l ON l.external_reference = pt.id
+      LEFT JOIN ledger l ON l.external_reference = pt.external_transaction_id
       WHERE pt.description LIKE $1
       ORDER BY pt.created_at DESC
       LIMIT $2
@@ -212,12 +249,12 @@ async function getInvestorBalance(investorId) {
         u.id,
         u.name,
         u.email,
-        COALESCE(b.balance, 0) as balance,
+        COALESCE(ca.available_balance, 0) as balance,
         u.created_at
       FROM users u
-      LEFT JOIN balances b ON b.user_id = u.id
-      WHERE u.id = $1 AND u.user_type = 'investor'
-    `, [investorId]);
+      LEFT JOIN custody_accounts ca ON ca.id = $2
+      WHERE u.id = $1 AND (u.role = 'investor' OR u.user_type = 'investor')
+    `, [investorId, `user_${investorId}`]);
 
         if (result.rows.length === 0) {
             throw new Error('Investidor não encontrado');
