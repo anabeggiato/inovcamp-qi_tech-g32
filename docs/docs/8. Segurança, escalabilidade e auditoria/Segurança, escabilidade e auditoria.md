@@ -2,7 +2,8 @@
 title: Segurança, escalabilidade e auditoria
 sidebar_position: 8
 ---
-# Documentação - Segurança, Escalabilidade e Auditoria
+
+# QI-EDU - Segurança, Escalabilidade e Auditoria
 
 ## 1. Introdução
 
@@ -37,7 +38,6 @@ Projetado para crescer sem comprometer integridade ou performance.
 - **Banco de Dados:** PostgreSQL com JSONB permite flexibilidade em contratos e payloads, pronto para replicação ou particionamento quando o volume de usuários aumentar.
 - **Jobs RPA:** cálculo de score e verificação antifraude executam em paralelo, sem atrasar matching ou desembolso.
 - **Cache e Filas:** Redis e mensageria isolam picos de matching e notificações, mostrando como o sistema aguenta carga maior sem travar a experiência do aluno.
-- **Containers e Cloud Ready:** Docker garante consistência entre ambientes e facilita scaling horizontal, permitindo que protótipo se comporte como produto real.
 
 | Medida              | Evidência de valor                                                               |
 | ------------------- | -------------------------------------------------------------------------------- |
@@ -45,7 +45,6 @@ Projetado para crescer sem comprometer integridade ou performance.
 | Banco de Dados      | Escalabilidade e flexibilidade para contratos e histórico de scores/fraudes.     |
 | Jobs RPA            | Processamento paralelo mantém o sistema responsivo mesmo sob volume alto.        |
 | Cache/Filas         | Matching e notificações funcionam sem bloquear usuários ativos.                  |
-| Cloud Ready         | MVP é facilmente replicável em produção, mostrando visão de longo prazo.         |
 
 ---
 
@@ -67,12 +66,11 @@ Transparência e rastreabilidade demonstram confiabilidade.
 
 ---
 
-## 5. Conclusão
+## 5. Conclusão e Próximos Passos:
 
 O QI-EDU evidencia que um **MVP pode ser seguro, escalável e auditável**:
 
 - Segurança se integra ao fluxo de dados e decisões, reduzindo risco de fraude e inadimplência.
 - Escalabilidade permite crescimento do número de alunos e investidores sem reescrever módulos.
 - Auditoria garante rastreabilidade completa de cada empréstimo, pagamento e score.
-
-Cada escolha de design não é apenas funcional: **provoca confiança, facilita expansão e valida a solução frente aos critérios do hackathon**.
+- Como próximo passo, conteinerização e dockerização, garantindo portabilidade entre ambientes, escalabilidade da solução e facilidade de manutenção.
