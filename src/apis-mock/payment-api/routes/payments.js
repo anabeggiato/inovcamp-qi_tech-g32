@@ -39,12 +39,26 @@ router.post('/create-plan', async (req, res) => {
             return res.status(400).json(createResponse(false, 'Dados obrigatórios: loan, paymentTiming'));
         }
 
-        logger.info(`Criando plano de pagamento para empréstimo ${loan.id}`, { paymentTiming });
+        logger.info(`Criando plano de pagamento para empréstimo ${loan}`, { paymentTiming });
 
-        const paymentPlan = await paymentService.createPaymentPlan(loan, paymentTiming);
+        // Buscar dados do empréstimo no banco
+        logger.info(`🔍 Buscando empréstimo ID: ${loan}`);
+        console.log(`🔍 DEBUG: Chamando getLoanById com ID: ${loan}`);
+        
+        const loanData = await paymentService.getLoanById(loan);
+        console.log(`📊 DEBUG: Resultado getLoanById:`, loanData);
+        logger.info(`📊 Dados do empréstimo: ${JSON.stringify(loanData)}`);
+        
+        if (!loanData) {
+            logger.warn(`❌ Empréstimo ${loan} não encontrado`);
+            console.log(`❌ DEBUG: Empréstimo não encontrado, retornando 404`);
+            return res.status(404).json(createResponse(false, 'Empréstimo não encontrado'));
+        }
+
+        const paymentPlan = await paymentService.createPaymentPlan(loanData, paymentTiming);
 
         logger.info('Plano de pagamento criado com sucesso', {
-            loanId: loan.id,
+            loanId: loan,
             installments: paymentPlan.installments
         });
 

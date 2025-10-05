@@ -1,15 +1,33 @@
 "use client"
 import { useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react';
+import { authService } from "@/services/authService";
+import { useRouter } from "next/navigation"
 
 export default function Login() {
+    const router = useRouter();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
-    const user = {
-        email, password
-    }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        setError("");
+
+        try {
+            const response = await authService.login({ email, password });
+
+            if (response?.success) {
+                router.push("/");
+            } else {
+                setError(response?.message || "Erro ao realizar login");
+            }
+        } catch (error) {
+            setError(error.message || "Erro inesperado");
+        }
+    };
 
     return (
         <div className='w-screen h-screen bg-brand-gradient flex flex-col items-center justify-center'>
@@ -20,7 +38,7 @@ export default function Login() {
                 </button>
             </div>
 
-            <section className='bg-white w-[25%] h-[50%] rounded-2xl z-1 flex flex-col align-center items-center justify-between p-8 shadow-2xl'>
+            <form className='bg-white w-[25%] h-[50%] rounded-2xl z-1 flex flex-col align-center items-center justify-between p-8 shadow-2xl' onSubmit={handleSubmit}>
                 <h3 className='font-semibold pb-1 text-2xl'>Bem-vindo de volta</h3>
                 <p className='text-sm text-gray-400'>Entre com suas credenciais para acessar sua conta</p>
 
@@ -40,13 +58,13 @@ export default function Login() {
                         <label className='text-gray-400 font-regular'>Lembrar de mim</label>
                     </div>
 
-                    <a href='/#' className='text-primary underline'>Esqueceu a senha?</a>
+                    <a href='/#' className='text-primary hover:underline'>Esqueceu a senha?</a>
                 </div>
 
-                <button className='bg-primary p-2 text-white w-full rounded-lg mt-4 hover:bg-primary/90'>Entrar</button>
-
-                <p className='text-gray-500'>Não tem uma conta? <a href="/cadastro" className='text-primary underline'>Cadastre-se</a></p>
-            </section>
+                <button className='bg-primary p-2 text-white w-full rounded-lg mt-4 hover:bg-primary/90' type='submit'>Entrar</button>
+                {error && <p className='text-red-500'>{error}</p>}
+                <p className='text-gray-500'>Não tem uma conta? <a href="/cadastro" className='text-primary hover:underline'>Cadastre-se</a></p>
+            </form>
         </div>
     )
 }

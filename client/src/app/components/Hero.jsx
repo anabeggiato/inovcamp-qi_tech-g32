@@ -9,7 +9,7 @@ export default function Hero() {
                 <h1 className='bg-brand-gradient bg-clip-text text-transparent font-bold text-7xl'>Financiamento Educacional</h1>
             </div>
 
-            <p className='w-[45%] text-2xl text-gray-400 font-thin'>
+            <p className='w-[60%] text-2xl text-gray-400'>
                 Conectamos estudantes que buscam realizar seus sonhos com investidores que acreditam no poder transformador da educação.
             </p>
 

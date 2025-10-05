@@ -6,7 +6,7 @@ export default function Footer() {
     const router = useRouter()
     return (
         <footer className='flex flex-col items-center text-center text-gray-500 border-t-1 border-border w-screen'>
-            <div className='grid grid-cols-4 text-left justify-items-center py-8 w-[90%] border-b-1 border-border'>
+            <div className='grid grid-cols-4 text-left justify-items-center py-8 w-full px-64 border-b-1 border-border'>
                 <div className='text-left'>
                     <div className="flex items-center justify-start h-16" onClick={() => router.push("/")}>
                         <div className="w-8 h-8 bg-purple-gradient rounded-lg hover:cursor-pointer" />
