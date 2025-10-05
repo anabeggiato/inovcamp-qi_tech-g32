@@ -74,7 +74,7 @@ const mockAcademicData = {
 // Endpoints da API Mock de Faculdades
 
 // GET /academic-data/:studentId - Busca dados acadêmicos de um estudante
-app.get('/academic-data/:studentId', (req, res) => {
+app.get('/academic-data/:studentId', async (req, res) => {
     try {
         const { studentId } = req.params;
         const studentIdNum = parseInt(studentId);
@@ -86,8 +86,21 @@ app.get('/academic-data/:studentId', (req, res) => {
             return res.status(400).json(createResponse(false, 'ID do estudante inválido'));
         }
 
+        // Verifica se o usuário é realmente um estudante
+        const { query } = require('../shared/database');
+        const userResult = await query('SELECT id, name, role FROM users WHERE id = $1', [studentIdNum]);
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json(createResponse(false, 'Usuário não encontrado'));
+        }
+
+        const user = userResult.rows[0];
+        if (user.role !== 'student') {
+            return res.status(403).json(createResponse(false, `Acesso negado. Usuário ${user.name} não é um estudante (role: ${user.role})`));
+        }
+
         if (!mockAcademicData[studentIdNum]) {
-            return res.status(404).json(createResponse(false, 'Estudante não encontrado'));
+            return res.status(404).json(createResponse(false, 'Dados acadêmicos não encontrados para este estudante'));
         }
 
         const academicData = mockAcademicData[studentIdNum];
@@ -116,7 +129,7 @@ app.get('/academic-data', (req, res) => {
 });
 
 // POST /academic-data/:studentId - Atualiza dados acadêmicos (simulação)
-app.post('/academic-data/:studentId', (req, res) => {
+app.post('/academic-data/:studentId', async (req, res) => {
     try {
         const { studentId } = req.params;
         const studentIdNum = parseInt(studentId);
@@ -129,8 +142,21 @@ app.post('/academic-data/:studentId', (req, res) => {
             return res.status(400).json(createResponse(false, 'ID do estudante inválido'));
         }
 
+        // Verifica se o usuário é realmente um estudante
+        const { query } = require('../shared/database');
+        const userResult = await query('SELECT id, name, role FROM users WHERE id = $1', [studentIdNum]);
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json(createResponse(false, 'Usuário não encontrado'));
+        }
+
+        const user = userResult.rows[0];
+        if (user.role !== 'student') {
+            return res.status(403).json(createResponse(false, `Acesso negado. Usuário ${user.name} não é um estudante (role: ${user.role})`));
+        }
+
         if (!mockAcademicData[studentIdNum]) {
-            return res.status(404).json(createResponse(false, 'Estudante não encontrado'));
+            return res.status(404).json(createResponse(false, 'Dados acadêmicos não encontrados para este estudante'));
         }
 
         // Validação específica para os novos campos
@@ -166,7 +192,7 @@ app.post('/academic-data/:studentId', (req, res) => {
 });
 
 // GET /scholarship-data/:studentId - Busca dados específicos de bolsa de um estudante
-app.get('/scholarship-data/:studentId', (req, res) => {
+app.get('/scholarship-data/:studentId', async (req, res) => {
     try {
         const { studentId } = req.params;
         const studentIdNum = parseInt(studentId);
@@ -178,8 +204,21 @@ app.get('/scholarship-data/:studentId', (req, res) => {
             return res.status(400).json(createResponse(false, 'ID do estudante inválido'));
         }
 
+        // Verifica se o usuário é realmente um estudante
+        const { query } = require('../shared/database');
+        const userResult = await query('SELECT id, name, role FROM users WHERE id = $1', [studentIdNum]);
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json(createResponse(false, 'Usuário não encontrado'));
+        }
+
+        const user = userResult.rows[0];
+        if (user.role !== 'student') {
+            return res.status(403).json(createResponse(false, `Acesso negado. Usuário ${user.name} não é um estudante (role: ${user.role})`));
+        }
+
         if (!mockAcademicData[studentIdNum]) {
-            return res.status(404).json(createResponse(false, 'Estudante não encontrado'));
+            return res.status(404).json(createResponse(false, 'Dados acadêmicos não encontrados para este estudante'));
         }
 
         const studentData = mockAcademicData[studentIdNum];
