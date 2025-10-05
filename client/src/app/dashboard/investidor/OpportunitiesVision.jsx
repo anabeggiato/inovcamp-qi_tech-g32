@@ -169,7 +169,7 @@ export default function OpportunitiesVision() {
 
             <section className="space-y-6">
                 {oportunidades.map((oport) => (
-                    <div key={oport.id} className="border border-border rounded-2xl p-4 hover:shadow-sm transition-all">
+                    <div key={oport.id} className="border border-border rounded-2xl p-4 hover:shadow-sm transition-all p-8">
                         <div>
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center space-x-4">
@@ -222,7 +222,7 @@ export default function OpportunitiesVision() {
                                     <Shield className="h-5 w-5 text-primary" />
                                     <span className="text-sm font-medium">Risco calculado: Baixo</span>
                                 </div>
-                                <div className="flex items-center space-xbrand-2">
+                                <div className="flex items-center space-x-2">
                                     <TrendingUp className="h-5 w-5 text-success" />
                                     <span className="text-sm font-medium">Retorno esperado: {oport.taxa}% a.a.</span>
                                 </div>
