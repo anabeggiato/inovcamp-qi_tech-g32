@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
 const matchingController = require('../controllers/matching.controller');
 const matchingExecutionController = require('../controllers/matching-execution.controller');
+const { LoansController } = require('../controllers/loans.controller');
 
 const router = express.Router();
 
@@ -29,23 +30,14 @@ router.get('/', (req, res) => {
     }
   });
 });
+router.get('/', LoansController.list);
 
 /**
  * @route   GET /api/loans/:id
  * @desc    Obter detalhes de um empréstimo específico
  * @access  Private
  */
-router.get('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Endpoint placeholder - Detalhes do empréstimo',
-    data: {
-      loanId: req.params.id,
-      loan: null,
-      note: 'Implementar lógica para buscar empréstimo específico'
-    }
-  });
-});
+router.get('/:id', LoansController.getById);
 
 /**
  * @route   GET /api/loans/:loanId/details
@@ -66,31 +58,14 @@ router.get('/:loanId/matches', matchingExecutionController.getLoanMatches);
  * @desc    Criar novo empréstimo (apenas estudantes)
  * @access  Private (Student)
  */
-router.post('/', requireRole(['student']), (req, res) => {
-  res.json({
-    success: true,
-    message: 'Endpoint placeholder - Criar empréstimo',
-    data: {
-      note: 'Implementar lógica para criar novo empréstimo'
-    }
-  });
-});
+router.post('/', requireRole(['student']), LoansController.create);
 
 /**
  * @route   PUT /api/loans/:id/status
  * @desc    Atualizar status do empréstimo
  * @access  Private (Admin/System)
  */
-router.put('/:id/status', requireRole(['admin', 'system']), (req, res) => {
-  res.json({
-    success: true,
-    message: 'Endpoint placeholder - Atualizar status do empréstimo',
-    data: {
-      loanId: req.params.id,
-      note: 'Implementar lógica para atualizar status (aprovação, rejeição, etc.)'
-    }
-  });
-});
+router.put('/:id/status', requireRole(['admin', 'system']), LoansController.updateStatus);
 
 /**
  * @route   GET /api/loans/:id/matches
