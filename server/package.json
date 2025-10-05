@@ -13,9 +13,12 @@
     "db:reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run",
     "db:test": "knex migrate:latest && knex seed:run && node test-db.js",
     "test:api": "node test-api.js",
+    "test:integration": "node test-integration.js",
+    "test:events": "node test-events.js",
     "setup:payment-api": "node setup-payment-api.js"
   },
   "dependencies": {
+    "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

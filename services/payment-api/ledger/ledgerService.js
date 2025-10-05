@@ -66,31 +66,29 @@ async function createLedgerEntry(transaction) {
         logger.error(`Error saving ledger entry to database`, { entryId, error: error.message });
     }
 
-    // Simula processamento assíncrono
-    setTimeout(() => {
-        try {
-            // Valida saldo da conta de origem
-            if (accountBalances[fromAccount] < amount) {
-                entry.status = 'failed';
-                entry.error = 'Insufficient funds';
-                logger.error(`Ledger entry failed: insufficient funds`, { entryId, fromAccount, amount });
-                return;
-            }
-
-            // Processa transferência
-            accountBalances[fromAccount] -= amount;
-            accountBalances[toAccount] = (accountBalances[toAccount] || 0) + amount;
-
-            entry.status = 'completed';
-            entry.processedAt = new Date().toISOString();
-
-            logger.info(`Ledger entry completed`, { entryId, fromAccount, toAccount, amount });
-        } catch (error) {
+    // Processa transferência imediatamente (dupla entrada)
+    try {
+        // Valida saldo da conta de origem
+        if (accountBalances[fromAccount] < amount) {
             entry.status = 'failed';
-            entry.error = error.message;
-            logger.error(`Ledger entry failed`, { entryId, error: error.message });
+            entry.error = 'Insufficient funds';
+            logger.error(`Ledger entry failed: insufficient funds`, { entryId, fromAccount, amount });
+            return entry;
         }
-    }, 500);
+
+        // Processa transferência (dupla entrada)
+        accountBalances[fromAccount] -= amount;
+        accountBalances[toAccount] = (accountBalances[toAccount] || 0) + amount;
+
+        entry.status = 'completed';
+        entry.processedAt = new Date().toISOString();
+
+        logger.info(`Ledger entry completed`, { entryId, fromAccount, toAccount, amount });
+    } catch (error) {
+        entry.status = 'failed';
+        entry.error = error.message;
+        logger.error(`Ledger entry failed`, { entryId, error: error.message });
+    }
 
     ledgerEntries[entryId] = entry;
 
@@ -359,6 +357,124 @@ async function getUserFees(userId, period = 'month') {
     }
 }
 
+/**
+ * Gera relatório de auditoria completo
+ * @param {string} startDate - Data inicial
+ * @param {string} endDate - Data final
+ * @returns {Object} Relatório de auditoria
+ */
+function generateAuditReport(startDate, endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const entries = Object.values(ledgerEntries).filter(entry => {
+        const entryDate = new Date(entry.createdAt);
+        return entryDate >= start && entryDate <= end;
+    });
+
+    // Agrupar por categoria
+    const byCategory = entries.reduce((acc, entry) => {
+        if (!acc[entry.category]) {
+            acc[entry.category] = { count: 0, total: 0, entries: [] };
+        }
+        acc[entry.category].count++;
+        acc[entry.category].total += entry.amount;
+        acc[entry.category].entries.push(entry);
+        return acc;
+    }, {});
+
+    // Agrupar por status
+    const byStatus = entries.reduce((acc, entry) => {
+        if (!acc[entry.status]) {
+            acc[entry.status] = { count: 0, total: 0 };
+        }
+        acc[entry.status].count++;
+        acc[entry.status].total += entry.amount;
+        return acc;
+    }, {});
+
+    return {
+        period: { startDate, endDate },
+        summary: {
+            totalEntries: entries.length,
+            totalAmount: entries.reduce((sum, entry) => sum + entry.amount, 0),
+            successfulEntries: entries.filter(e => e.status === 'completed').length,
+            failedEntries: entries.filter(e => e.status === 'failed').length
+        },
+        byCategory,
+        byStatus,
+        entries: entries.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
+        generatedAt: new Date().toISOString()
+    };
+}
+
+/**
+ * Valida integridade do ledger (soma dos débitos = soma dos créditos)
+ * @returns {Object} Resultado da validação
+ */
+function validateLedgerIntegrity() {
+    const entries = Object.values(ledgerEntries);
+    
+    let totalDebits = 0;
+    let totalCredits = 0;
+    const accountBalances = {};
+
+    entries.forEach(entry => {
+        if (entry.status === 'completed') {
+            // Débito (fromAccount perde dinheiro)
+            if (!accountBalances[entry.fromAccount]) {
+                accountBalances[entry.fromAccount] = 0;
+            }
+            accountBalances[entry.fromAccount] -= entry.amount;
+            totalDebits += entry.amount;
+
+            // Crédito (toAccount ganha dinheiro)
+            if (!accountBalances[entry.toAccount]) {
+                accountBalances[entry.toAccount] = 0;
+            }
+            accountBalances[entry.toAccount] += entry.amount;
+            totalCredits += entry.amount;
+        }
+    });
+
+    const isBalanced = Math.abs(totalDebits - totalCredits) < 0.01; // Tolerância para arredondamento
+
+    return {
+        isBalanced,
+        totalDebits,
+        totalCredits,
+        difference: totalCredits - totalDebits,
+        accountBalances,
+        validatedAt: new Date().toISOString()
+    };
+}
+
+/**
+ * Exporta dados do ledger para auditoria externa
+ * @param {string} format - Formato de exportação (json, csv)
+ * @returns {string} Dados exportados
+ */
+function exportLedgerData(format = 'json') {
+    const entries = Object.values(ledgerEntries);
+
+    if (format === 'csv') {
+        const headers = ['id', 'transactionId', 'fromAccount', 'toAccount', 'amount', 'description', 'category', 'subcategory', 'type', 'status', 'createdAt', 'processedAt'];
+        const csvRows = [headers.join(',')];
+        
+        entries.forEach(entry => {
+            const row = headers.map(header => {
+                const value = entry[header] || '';
+                return `"${value}"`;
+            });
+            csvRows.push(row.join(','));
+        });
+
+        return csvRows.join('\n');
+    }
+
+    return JSON.stringify(entries, null, 2);
+}
+
 module.exports = {
     createLedgerEntry,
     createRevenueEntry,
@@ -367,6 +483,9 @@ module.exports = {
     getLedgerEntriesByAccount,
     getLedgerEntriesByCategory,
     generateFinancialReport,
+    generateAuditReport,
+    validateLedgerIntegrity,
+    exportLedgerData,
     initializeSystemAccounts,
     getUserTransactions,
     getUserFees

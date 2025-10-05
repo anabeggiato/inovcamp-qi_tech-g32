@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./swagger/swaggerConfig');
 const { createServiceLogger } = require('../shared/logger');
@@ -11,6 +12,7 @@ const paymentMainRoutes = require('./routes/payments-main');
 const installmentRoutes = require('./routes/installments');
 const custodyRoutes = require('./routes/custody');
 const custodyAccountRoutes = require('./routes/custody-accounts');
+const auditRoutes = require('./routes/audit');
 
 // Inicializar sistema
 const ledgerService = require('./ledger/ledgerService');
@@ -36,6 +38,7 @@ app.use('/api/payments', paymentMainRoutes);
 app.use('/installments', installmentRoutes);
 app.use('/custody', custodyRoutes);
 app.use('/custody/accounts', custodyAccountRoutes);
+app.use('/api/audit', auditRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

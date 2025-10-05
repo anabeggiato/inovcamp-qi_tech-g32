@@ -2,12 +2,13 @@ const jwt = require('jsonwebtoken');
 const { db } = require('../../db');
 const { comparePassword, hashPassword } = require('../utils/hash');
 const config = require('../../config');
+const { eventService } = require('../services/eventService');
 
 /**
  * Controller para autenticação
  */
 class AuthController {
-  
+
   /**
    * Login do usuário
    * POST /api/auth/login
@@ -57,7 +58,7 @@ class AuthController {
 
       // Gerar token JWT
       const token = jwt.sign(
-        { 
+        {
           userId: user.id,
           email: user.email,
           role: user.role
@@ -68,7 +69,7 @@ class AuthController {
 
       // Retornar dados do usuário (sem senha) e token
       const { password: _, ...userWithoutPassword } = user;
-      
+
       res.json({
         success: true,
         message: 'Login realizado com sucesso',
@@ -159,6 +160,7 @@ class AuthController {
 
       console.log('✅ Usuário criado com ID:', newUser.id);
 
+<<<<<<< HEAD
       // 1) Criar conta de custódia via Payment API
       let custodyResult = { status: 'pending' };
       try {
@@ -200,10 +202,15 @@ class AuthController {
       } catch (e) {
         console.warn('⚠️  Falha ao ler score inicial:', e.message);
       }
+=======
+      // 🎯 DISPARAR EVENTO IMEDIATAMENTE - Sistema baseado em eventos!
+      console.log('🎯 Disparando evento user.created...');
+      await eventService.emitEvent('user.created', newUser);
+>>>>>>> 3d0729dff7158072ab960b9438e59446a13946c5
 
       // Gerar token JWT
       const token = jwt.sign(
-        { 
+        {
           userId: newUser.id,
           email,
           role
@@ -277,21 +284,21 @@ class AuthController {
 const loginValidation = [
   (req, res, next) => {
     const { email, password } = req.body;
-    
+
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: 'Email e senha são obrigatórios'
       });
     }
-    
+
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
         message: 'Senha deve ter pelo menos 6 caracteres'
       });
     }
-    
+
     next();
   }
 ];
@@ -302,7 +309,7 @@ const loginValidation = [
 const registerValidation = [
   (req, res, next) => {
     const { name, email, cpf, password, role } = req.body;
-    
+
     // Campos obrigatórios
     if (!name || !email || !cpf || !password || !role) {
       return res.status(400).json({
@@ -310,7 +317,7 @@ const registerValidation = [
         message: 'Todos os campos são obrigatórios: name, email, cpf, password, role'
       });
     }
-    
+
     // Validação do email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -319,7 +326,7 @@ const registerValidation = [
         message: 'Email inválido'
       });
     }
-    
+
     // Validação do CPF (formato básico)
     const cpfRegex = /^\d{11}$/;
     if (!cpfRegex.test(cpf.replace(/\D/g, ''))) {
@@ -328,7 +335,7 @@ const registerValidation = [
         message: 'CPF deve conter 11 dígitos'
       });
     }
-    
+
     // Validação da senha
     if (password.length < 6) {
       return res.status(400).json({
@@ -336,7 +343,7 @@ const registerValidation = [
         message: 'Senha deve ter pelo menos 6 caracteres'
       });
     }
-    
+
     // Validação do role
     const validRoles = ['student', 'investor', 'institution'];
     if (!validRoles.includes(role)) {
@@ -345,7 +352,7 @@ const registerValidation = [
         message: 'Role deve ser: student, investor ou institution'
       });
     }
-    
+
     next();
   }
 ];

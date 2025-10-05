@@ -19,9 +19,19 @@
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Buscando dados acadêmicos para estudante 9\u001b[39m","timestamp":"2025-10-05 01:28:25"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 02:24:08"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 05:51:56"}
+<<<<<<< HEAD
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 09:47:44"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 10:13:50"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 10:13:56"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 10:36:22"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 10:47:10"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 11:13:36"}
+=======
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 07:00:41"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 07:04:47"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 07:09:49"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 07:19:08"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 07:26:02"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 07:40:00"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[FACULTY-API] Faculty API Mock rodando na porta 3001\u001b[39m","timestamp":"2025-10-05 07:52:13"}
+>>>>>>> 3d0729dff7158072ab960b9438e59446a13946c5

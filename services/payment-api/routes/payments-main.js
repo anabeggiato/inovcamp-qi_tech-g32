@@ -218,6 +218,98 @@ router.post('/webhook', async (req, res) => {
 });
 
 /**
+ * POST /api/disburse
+ * Processar desembolso (repasse de dinheiro para faculdade)
+ */
+router.post('/disburse', async (req, res) => {
+    try {
+        const {
+            loan_id,
+            match_id,
+            amount,
+            from_investor,
+            to_school,
+            student_id,
+            description
+        } = req.body;
+
+        if (!loan_id || !match_id || !amount || !from_investor || !to_school || !student_id) {
+            return res.status(400).json(createResponse(false, 'Dados obrigatórios: loan_id, match_id, amount, from_investor, to_school, student_id'));
+        }
+
+        logger.info('Processando desembolso', {
+            loan_id,
+            match_id,
+            amount,
+            from_investor,
+            to_school,
+            student_id
+        });
+
+        // 1. Verificar saldo do investidor
+        const investorBalance = await custodyService.getAccountBalance(`user_${from_investor}`);
+        if (investorBalance.availableBalance < amount) {
+            return res.status(400).json(createResponse(false, 'Saldo insuficiente do investidor para desembolso'));
+        }
+
+        // 2. Bloquear valor do investidor
+        await custodyService.blockAmount(`user_${from_investor}`, amount, `Desembolso - Match ${match_id}`);
+
+        // 3. Criar pagamento de desembolso
+        const disbursementPayment = await paymentService.createPayment({
+            from_user_id: from_investor,
+            to_user_id: to_school,
+            amount: amount,
+            payment_method: 'disbursement',
+            description: description || `Desembolso P2P - Empréstimo ${loan_id}`,
+            loan_id: loan_id,
+            match_id: match_id
+        });
+
+        // 4. Processar pagamento
+        const processedPayment = await paymentService.processPayment(disbursementPayment.id);
+
+        // 5. Transferir para conta da faculdade
+        await custodyService.transferBetweenAccounts(
+            `user_${from_investor}`,
+            `institution_${to_school}`,
+            amount,
+            description || `Desembolso P2P - Empréstimo ${loan_id}`
+        );
+
+        // 6. Registrar no ledger
+        await ledgerService.createLedgerEntry({
+            id: `DISB_${Date.now()}`,
+            fromAccount: `user_${from_investor}`,
+            toAccount: `institution_${to_school}`,
+            amount: amount,
+            description: description || `Desembolso P2P - Empréstimo ${loan_id}`,
+            category: 'disbursement',
+            subcategory: 'p2p_loan',
+            loan_id: loan_id,
+            match_id: match_id
+        });
+
+        logger.info(`Desembolso processado com sucesso: ${disbursementPayment.id}`);
+
+        res.json(createResponse(true, 'Desembolso processado com sucesso', {
+            paymentId: disbursementPayment.id,
+            status: 'completed',
+            amount: amount,
+            from_investor: from_investor,
+            to_school: to_school,
+            student_id: student_id,
+            loan_id: loan_id,
+            match_id: match_id
+        }));
+
+    } catch (error) {
+        logger.error('Erro ao processar desembolso', error);
+        res.status(500).json(handleError(error, 'disburse'));
+    }
+});
+
+/**
  * GET /api/payments/:id
  * Obter detalhes de um pagamento específico
  */

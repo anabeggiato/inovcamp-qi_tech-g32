@@ -35,4 +35,11 @@ router.get('/loans/:loan_id', MatchingController.getLoanMatches);
  */
 router.get('/offers/:offer_id', MatchingController.getOfferMatches);
 
+/**
+ * @route   POST /api/matching/approve/:match_id
+ * @desc    Aprovar um match (investidor aceita o empréstimo)
+ * @access  Private (Investor)
+ */
+router.post('/approve/:match_id', requireRole(['investor', 'admin']), MatchingController.approveMatch);
+
 module.exports = router;
