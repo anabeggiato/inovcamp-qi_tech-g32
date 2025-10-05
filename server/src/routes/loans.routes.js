@@ -1,5 +1,7 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
+const matchingController = require('../controllers/matching.controller');
+const matchingExecutionController = require('../controllers/matching-execution.controller');
 const { LoansController } = require('../controllers/loans.controller');
 
 const router = express.Router();
@@ -12,6 +14,22 @@ router.use(authenticateToken);
  * @desc    Listar todos os empréstimos (com filtros por role)
  * @access  Private
  */
+router.get('/', (req, res) => {
+  const userRole = req.user.role;
+
+  res.json({
+    success: true,
+    message: `Endpoint placeholder - Listar empréstimos (${userRole})`,
+    data: {
+      loans: [],
+      filters: {
+        role: userRole,
+        status: 'all'
+      },
+      note: 'Implementar lógica para filtrar empréstimos baseado no role do usuário'
+    }
+  });
+});
 router.get('/', LoansController.list);
 
 /**
@@ -20,6 +38,20 @@ router.get('/', LoansController.list);
  * @access  Private
  */
 router.get('/:id', LoansController.getById);
+
+/**
+ * @route   GET /api/loans/:loanId/details
+ * @desc    Obter detalhes completos de um empréstimo (para matching)
+ * @access  Private
+ */
+router.get('/:loanId/details', matchingController.getLoanDetails);
+
+/**
+ * @route   GET /api/loans/:loanId/matches
+ * @desc    Buscar matches de um empréstimo
+ * @access  Private
+ */
+router.get('/:loanId/matches', matchingExecutionController.getLoanMatches);
 
 /**
  * @route   POST /api/loans

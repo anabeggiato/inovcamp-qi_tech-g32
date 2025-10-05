@@ -20,11 +20,11 @@ const authenticateToken = async (req, res, next) => {
 
     // Verificar e decodificar o token
     const decoded = jwt.verify(token, config.jwt.secret);
-    
+
     // Buscar usuário no banco
     const user = await db('users')
       .select('id', 'name', 'email', 'role', 'fraud_status')
-      .where('id', decoded.userId)
+      .where('id', decoded.id || decoded.userId)
       .first();
 
     if (!user) {
@@ -53,7 +53,7 @@ const authenticateToken = async (req, res, next) => {
         message: 'Token inválido'
       });
     }
-    
+
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
@@ -106,14 +106,14 @@ const optionalAuth = async (req, res, next) => {
       const decoded = jwt.verify(token, config.jwt.secret);
       const user = await db('users')
         .select('id', 'name', 'email', 'role', 'fraud_status')
-        .where('id', decoded.userId)
+        .where('id', decoded.id || decoded.userId)
         .first();
 
       if (user && user.fraud_status !== 'blocked') {
         req.user = user;
       }
     }
-    
+
     next();
   } catch (error) {
     // Em caso de erro, continua sem autenticação
