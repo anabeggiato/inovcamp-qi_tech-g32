@@ -1,5 +1,7 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
+const matchingController = require('../controllers/matching.controller');
+const matchingExecutionController = require('../controllers/matching-execution.controller');
 
 const router = express.Router();
 
@@ -110,5 +112,42 @@ router.get('/analytics', (req, res) => {
     }
   });
 });
+
+// ===== ROTAS DE MATCHING P2P =====
+
+/**
+ * @route   GET /api/investors/:investorId/offers/:offerId/eligible-loans
+ * @desc    Buscar empréstimos elegíveis para uma oferta específica
+ * @access  Private (Investor)
+ */
+router.get('/:investorId/offers/:offerId/eligible-loans', matchingController.getEligibleLoans);
+
+/**
+ * @route   GET /api/investors/:investorId/matching-stats
+ * @desc    Obter estatísticas de matching para um investidor
+ * @access  Private (Investor)
+ */
+router.get('/:investorId/matching-stats', matchingController.getMatchingStats);
+
+/**
+ * @route   POST /api/investors/:investorId/offers/:offerId/validate-investment
+ * @desc    Validar se um investimento é viável
+ * @access  Private (Investor)
+ */
+router.post('/:investorId/offers/:offerId/validate-investment', matchingController.validateInvestment);
+
+/**
+ * @route   POST /api/investors/:investorId/offers/:offerId/execute-match
+ * @desc    Executar um match (salvar no banco)
+ * @access  Private (Investor)
+ */
+router.post('/:investorId/offers/:offerId/execute-match', matchingExecutionController.executeMatch);
+
+/**
+ * @route   GET /api/investors/:investorId/matches
+ * @desc    Buscar matches de um investidor
+ * @access  Private (Investor)
+ */
+router.get('/:investorId/matches', matchingExecutionController.getInvestorMatches);
 
 module.exports = router;

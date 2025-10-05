@@ -1,5 +1,7 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
+const matchingController = require('../controllers/matching.controller');
+const matchingExecutionController = require('../controllers/matching-execution.controller');
 
 const router = express.Router();
 
@@ -13,7 +15,7 @@ router.use(authenticateToken);
  */
 router.get('/', (req, res) => {
   const userRole = req.user.role;
-  
+
   res.json({
     success: true,
     message: `Endpoint placeholder - Listar empréstimos (${userRole})`,
@@ -44,6 +46,20 @@ router.get('/:id', (req, res) => {
     }
   });
 });
+
+/**
+ * @route   GET /api/loans/:loanId/details
+ * @desc    Obter detalhes completos de um empréstimo (para matching)
+ * @access  Private
+ */
+router.get('/:loanId/details', matchingController.getLoanDetails);
+
+/**
+ * @route   GET /api/loans/:loanId/matches
+ * @desc    Buscar matches de um empréstimo
+ * @access  Private
+ */
+router.get('/:loanId/matches', matchingExecutionController.getLoanMatches);
 
 /**
  * @route   POST /api/loans
