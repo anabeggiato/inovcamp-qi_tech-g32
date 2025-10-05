@@ -18,6 +18,22 @@ export const authService = {
     }
   },
 
+  // Função para registro de usuário
+  async register({ name, email, cpf, password, role }) {
+    try {
+      const response = await http.post('/auth/register', { name, email, cpf, password, role });
+      if (response?.success) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
+      }
+      return response;
+    } catch (error) {
+      throw new Error(error.message || 'Erro ao fazer cadastro');
+    }
+  },
+
   // Função para verificar token
   async verify() {
     try {

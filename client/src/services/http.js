@@ -1,5 +1,5 @@
 // src/services/http.js
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 function getToken() {
   if (typeof window === "undefined") return null;
