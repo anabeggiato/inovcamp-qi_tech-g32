@@ -5,6 +5,8 @@ import Footer from '@/app/components/Footer'
 import HeaderInterna from '@/app/components/HeaderInterna'
 import ProgressBar from '@/app/components/ProgressBar'
 import ProtectedRoute from '@/app/components/ProtectedRoute'
+import AccountStatusCard from '@/app/components/AccountStatusCard'
+import NotificationBell from '@/app/components/NotificationBell'
 import Solicitation from './Solicitation'
 import { DollarSign, Clock, GraduationCap, CheckCircle2, AlertCircle, TrendingUp, FileText } from 'lucide-react'
 import { useState } from 'react'
@@ -27,10 +29,19 @@ export default function StudentPage() {
                 <main className="flex flex-col items-center px-64 text-center text-gray-500 pt-8 space-y-8">
                     {/*Título*/}
                     <section className='w-full mt-8'>
-                        <div className='w-full flex justify-end'>
-                            <button className='bg-primary text-white p-2 text-black rounded-lg hover:shadow-md hover:bg-primary/85' onClick={() => setShowPopup(!showPopup)}>Solicitar Crédito</button>
+                        <div className='w-full flex justify-between items-center'>
+                            <h1 className='text-3xl font-bold text-black'>Dashboard do Estudante</h1>
+                            <div className='flex items-center gap-4'>
+                                <NotificationBell />
+                                <button className='bg-primary text-white p-2 text-black rounded-lg hover:shadow-md hover:bg-primary/85' onClick={() => setShowPopup(!showPopup)}>Solicitar Crédito</button>
+                            </div>
                         </div>
                         <Solicitation showPopup={showPopup} setShowPopup={setShowPopup} institutions={institutions} scoreData={scoreData} onSubmit={(payload) => { console.log("Enviar pro backend:", payload); }} />
+                    </section>
+
+                    {/*Status da Conta*/}
+                    <section className='w-full'>
+                        <AccountStatusCard />
                     </section>
 
                     {/*Score*/}
@@ -52,9 +63,9 @@ export default function StudentPage() {
 
                     {/*Infos do empréstimo */}
                     <section className='grid grid-cols-3 w-full justify-items-center gap-8'>
-                        <CardInfoEmprestimo title="Valor Financiado" icon={<DollarSign size={16} />} value="R$ 35.000" subtitle="Taxa: 8.5% a.a." />
-                        <CardInfoEmprestimo title="Próximo Pagamento" icon={<Clock size={16} />} value="Jun/2026" subtitle="Após formatura" />
-                        <CardInfoEmprestimo title="Status do Curso" icon={<GraduationCap size={16} />} value="Ativo" subtitle="Frequência: 95%" />
+                        <CardInfoEmprestimo title="Valor Financiado" icon={<DollarSign size={16} />} value="N/A" subtitle="Sem empréstimo ativo" />
+                        <CardInfoEmprestimo title="Próximo Pagamento" icon={<Clock size={16} />} value="N/A" subtitle="Sem pagamentos pendentes" />
+                        <CardInfoEmprestimo title="Status do Curso" icon={<GraduationCap size={16} />} value="N/A" subtitle="Dados não disponíveis" />
                     </section>
 
                     {/*Status emprestimo e faculdade */}
@@ -62,36 +73,18 @@ export default function StudentPage() {
                         <div className='w-full border border-border rounded-lg p-6 shadow-sm'>
                             <h3 className='text-left gap-2 text-2xl text-black font-medium'>Status do Financiamento</h3>
                             <div className='flex w-full gap-2 text-left mt-4'>
-                                <CheckCircle2 className='text-success-green pt-1' size={20} />
+                                <AlertCircle className='text-gray-500 pt-1' size={20} />
                                 <p className='flex flex-col text-md'>
-                                    <span className='text-black font-medium'>Empréstimo Aprovado</span>
-                                    15/01/2025
+                                    <span className='text-gray-600'>Nenhum empréstimo ativo</span>
+                                    <span className='text-sm text-gray-500'>Solicite um empréstimo para começar</span>
                                 </p>
                             </div>
 
                             <div className='flex w-full gap-2 text-left mt-4'>
-                                <CheckCircle2 className='text-success-green pt-1' size={20} />
+                                <Clock className='text-gray-500 pt-1' size={20} />
                                 <p className='flex flex-col text-md'>
-                                    <span className='text-black font-medium'>Matrícula Aprovada</span>
-                                    01/01/2025
-                                </p>
-                            </div>
-
-                            <div className='flex w-full gap-2 text-left mt-4'>
-                                <div className="h-3.5 w-3.5 rounded-full border-2 border-primary flex items-center justify-center m-1.5">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                </div>
-                                <p className='flex flex-col text-md'>
-                                    <span className='text-black font-medium'>Matrícula Aprovada</span>
-                                    01/01/2025
-                                </p>
-                            </div>
-
-                            <div className='flex w-full gap-2 text-left mt-4'>
-                                <Clock className='pt-1' size={20} />
-                                <p className='flex flex-col text-md'>
-                                    <span className='text-black font-medium'>Matrícula Aprovada</span>
-                                    01/01/2025
+                                    <span className='text-gray-600'>Aguardando solicitação</span>
+                                    <span className='text-sm text-gray-500'>Complete seu perfil para prosseguir</span>
                                 </p>
                             </div>
                         </div>
@@ -99,22 +92,22 @@ export default function StudentPage() {
                         <div className='w-full border border-border rounded-lg p-6 shadow-sm'>
                             <h3 className='text-left gap-2 text-2xl text-black font-medium'>Desempenho Acadêmico</h3>
                             <div className='mt-4 text-black font-medium'>
-                                <p className='w-ful flex justify-between'>Média Geral <span className='text-success-green'>9.2</span></p>
-                                <ProgressBar progress={92} />
+                                <p className='w-ful flex justify-between'>Média Geral <span className='text-gray-500'>N/A</span></p>
+                                <ProgressBar progress={0} />
                             </div>
 
                             <div className='mt-8 text-black font-medium'>
-                                <p className='w-ful flex justify-between'>Frequência <span className='text-success-green'>95%</span></p>
-                                <ProgressBar progress={95} />
+                                <p className='w-ful flex justify-between'>Frequência <span className='text-gray-500'>N/A</span></p>
+                                <ProgressBar progress={0} />
                             </div>
 
                             <hr className='my-8 border border-border' />
 
-                            <div className='w-full flex rounded-lg bg-success-green/10 p-4'>
-                                <TrendingUp className='text-success-green' size={20} pt-1 />
+                            <div className='w-full flex rounded-lg bg-gray-50 p-4'>
+                                <AlertCircle className='text-gray-500' size={20} />
                                 <p className='flex flex-col text-left pl-4 text-sm'>
-                                    <span className='text-md text-success-green'>Ótimo Desempenho</span>
-                                    Suas notas e frequência estão garantindo as melhores taxas.
+                                    <span className='text-md text-gray-600'>Dados não disponíveis</span>
+                                    Aguardando dados da faculdade para calcular desempenho.
                                 </p>
                             </div>
                         </div>

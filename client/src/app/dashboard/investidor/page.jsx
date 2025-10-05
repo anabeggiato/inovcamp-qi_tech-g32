@@ -2,6 +2,8 @@
 import Footer from '@/app/components/Footer'
 import HeaderInterna from '@/app/components/HeaderInterna'
 import ProtectedRoute from '@/app/components/ProtectedRoute'
+import AccountStatusCard from '@/app/components/AccountStatusCard'
+import NotificationBell from '@/app/components/NotificationBell'
 import { DollarSign } from 'lucide-react'
 import { useState } from 'react'
 import GeneralVision from './GeneralVision'
@@ -28,13 +30,19 @@ export default function InvestorPage() {
                             <p>{vision === "general" ? "Acompanhe seus investimentos e retornos" : "Encontre estudantes alinhados com seu perfil de investimento"}</p>
                         </div>
 
-                        <div className='w-full flex justify-end'>
+                        <div className='w-full flex justify-end items-center gap-4'>
+                            <NotificationBell />
                             <button className='flex items-center bg-second-gradient p-2 py-1 text-white rounded-lg text-sm gap-2 hover:shadow-md' onClick={() => setShowOffer(!showOffer)}>
                                 <DollarSign size={16} /> Oferecer empréstimo
                             </button>
                         </div>
                         {showOffer && <LoanOffer showPopup={showOffer} setShowPopup={setShowOffer} onSubmit={(payload) => { console.log("Enviar pro backend:", payload); }}
                         />}
+                    </section>
+
+                    {/*Status da Conta*/}
+                    <section className='w-full'>
+                        <AccountStatusCard />
                     </section>
 
                     <div className='w-full flex items-start '>

@@ -1,5 +1,6 @@
 // src/services/authService.js
 import { http } from './http';
+import { extractErrorMessage } from '../utils/errorHandler';
 
 export const authService = {
   // Função para login
@@ -30,7 +31,9 @@ export const authService = {
       }
       return response;
     } catch (error) {
-      throw new Error(error.message || 'Erro ao fazer cadastro');
+      // Extrair mensagem de erro amigável
+      const friendlyMessage = extractErrorMessage(error);
+      throw new Error(friendlyMessage);
     }
   },
 
