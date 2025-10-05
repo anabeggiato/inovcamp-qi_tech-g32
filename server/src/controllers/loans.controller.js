@@ -36,6 +36,64 @@ class LoansController {
   }
 
   /**
+   * Listar empréstimos disponíveis para investidores (P2P)
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   */
+  static async listAvailable(req, res) {
+    try {
+      const { role: userRole, id: userId } = req.user;
+      
+      console.log(`🔍 Listando empréstimos disponíveis para investidor ${userId}`);
+
+      // Buscar empréstimos pendentes que precisam de financiamento
+      const availableLoans = await db('loans')
+        .select(
+          'loans.*',
+          'users.name as borrower_name',
+          'users.email as borrower_email'
+        )
+        .join('users', 'loans.borrower_id', 'users.id')
+        .where('loans.status', 'pending')
+        .orderBy('loans.created_at', 'desc');
+
+      // Adicionar informações de matching para cada empréstimo
+      const loansWithMatching = await Promise.all(
+        availableLoans.map(async (loan) => {
+          // Verificar se já existe matching para este empréstimo
+          const existingMatches = await db('matches')
+            .select('*')
+            .where('loan_id', loan.id);
+
+          return {
+            ...loan,
+            matching_status: existingMatches.length > 0 ? 'in_progress' : 'available',
+            existing_matches: existingMatches.length
+          };
+        })
+      );
+
+      res.json({
+        success: true,
+        message: 'Empréstimos disponíveis para investimento',
+        data: {
+          loans: loansWithMatching,
+          total: loansWithMatching.length,
+          filters: { 
+            role: userRole, 
+            userId,
+            status: 'available_for_investment'
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao listar empréstimos disponíveis:', error);
+      LoansController._handleError(res, error, 'listar empréstimos disponíveis');
+    }
+  }
+
+  /**
    * Obter empréstimo por ID
    * @param {Object} req - Request object
    * @param {Object} res - Response object

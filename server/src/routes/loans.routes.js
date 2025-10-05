@@ -1,7 +1,5 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
-const matchingController = require('../controllers/matching.controller');
-const matchingExecutionController = require('../controllers/matching-execution.controller');
 const { LoansController } = require('../controllers/loans.controller');
 
 const router = express.Router();
@@ -14,23 +12,14 @@ router.use(authenticateToken);
  * @desc    Listar todos os empréstimos (com filtros por role)
  * @access  Private
  */
-router.get('/', (req, res) => {
-  const userRole = req.user.role;
-
-  res.json({
-    success: true,
-    message: `Endpoint placeholder - Listar empréstimos (${userRole})`,
-    data: {
-      loans: [],
-      filters: {
-        role: userRole,
-        status: 'all'
-      },
-      note: 'Implementar lógica para filtrar empréstimos baseado no role do usuário'
-    }
-  });
-});
 router.get('/', LoansController.list);
+
+/**
+ * @route   GET /api/loans/available
+ * @desc    Listar empréstimos disponíveis para investidores (P2P)
+ * @access  Private (Investor)
+ */
+router.get('/available', requireRole(['investor']), LoansController.listAvailable);
 
 /**
  * @route   GET /api/loans/:id
@@ -38,20 +27,6 @@ router.get('/', LoansController.list);
  * @access  Private
  */
 router.get('/:id', LoansController.getById);
-
-/**
- * @route   GET /api/loans/:loanId/details
- * @desc    Obter detalhes completos de um empréstimo (para matching)
- * @access  Private
- */
-router.get('/:loanId/details', matchingController.getLoanDetails);
-
-/**
- * @route   GET /api/loans/:loanId/matches
- * @desc    Buscar matches de um empréstimo
- * @access  Private
- */
-router.get('/:loanId/matches', matchingExecutionController.getLoanMatches);
 
 /**
  * @route   POST /api/loans
@@ -76,11 +51,7 @@ router.get('/:id/matches', (req, res) => {
   res.json({
     success: true,
     message: 'Endpoint placeholder - Matches do empréstimo',
-    data: {
-      loanId: req.params.id,
-      matches: [],
-      note: 'Implementar lógica para buscar ofertas casadas com o empréstimo'
-    }
+    data: { matches: [] }
   });
 });
 
@@ -93,10 +64,7 @@ router.post('/:id/disburse', requireRole(['system']), (req, res) => {
   res.json({
     success: true,
     message: 'Endpoint placeholder - Liberar recursos',
-    data: {
-      loanId: req.params.id,
-      note: 'Implementar lógica para liberação de recursos para instituição'
-    }
+    data: { loanId: req.params.id }
   });
 });
 

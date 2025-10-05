@@ -13,6 +13,8 @@ const loansRoutes = require('./routes/loans.routes');
 const paymentsRoutes = require('./routes/payments.routes');
 const facultiesRoutes = require('./routes/faculties.routes');
 const recommendationsRoutes = require('./routes/recommendations.routes');
+const offersRoutes = require('./routes/offers.routes');
+const matchingRoutes = require('./routes/matching.routes');
 
 const app = express();
 const PORT = config.server.port;
@@ -76,7 +78,9 @@ app.get('/', (req, res) => {
       loans: '/api/loans',
       payments: '/api/payments',
       faculties: '/api/faculties',
-      recommendations: '/api/recommendations'
+      recommendations: '/api/recommendations',
+      offers: '/api/offers',
+      matching: '/api/matching'
     },
     documentation: 'https://github.com/qitech/api-docs'
   });
@@ -90,6 +94,8 @@ app.use('/api/loans', loansRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/faculties', facultiesRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
+app.use('/api/offers', offersRoutes);
+app.use('/api/matching', matchingRoutes);
 
 // Middleware para rotas não encontradas
 app.use('*', (req, res) => {
