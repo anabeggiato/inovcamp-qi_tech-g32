@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const { testConnection } = require('../db');
+const { automationService } = require('./services/automation.service');
 
 // Importar rotas
 const authRoutes = require('./routes/auth.routes');
@@ -15,6 +16,9 @@ const facultiesRoutes = require('./routes/faculties.routes');
 const recommendationsRoutes = require('./routes/recommendations.routes');
 const offersRoutes = require('./routes/offers.routes');
 const matchingRoutes = require('./routes/matching.routes');
+const scoresRoutes = require('./routes/scores.routes');
+const automationRoutes = require('./routes/automation.routes');
+const notificationsRoutes = require('./routes/notifications.routes');
 
 const app = express();
 const PORT = config.server.port;
@@ -80,7 +84,10 @@ app.get('/', (req, res) => {
       faculties: '/api/faculties',
       recommendations: '/api/recommendations',
       offers: '/api/offers',
-      matching: '/api/matching'
+      matching: '/api/matching',
+      scores: '/api/scores',
+      automation: '/api/automation',
+      notifications: '/api/notifications'
     },
     documentation: 'https://github.com/qitech/api-docs'
   });
@@ -96,6 +103,9 @@ app.use('/api/faculties', facultiesRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
 app.use('/api/offers', offersRoutes);
 app.use('/api/matching', matchingRoutes);
+app.use('/api/scores', scoresRoutes);
+app.use('/api/automation', automationRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Middleware para rotas não encontradas
 app.use('*', (req, res) => {
@@ -119,7 +129,7 @@ const startServer = async () => {
     }
 
     // Iniciar servidor
-    app.listen(PORT, () => {
+    app.listen(PORT, async () => {
       console.log('🚀 Servidor iniciado com sucesso!');
       console.log(`📍 URL: http://localhost:${PORT}`);
       console.log(`🔗 Health Check: http://localhost:${PORT}/health`);
@@ -136,6 +146,13 @@ const startServer = async () => {
       console.log('   GET  /api/payments/* - Rotas de pagamentos');
       console.log('   GET  /api/faculties/* - Rotas de instituições');
       console.log('   GET  /api/recommendations/* - Rotas de recomendações');
+      console.log('   GET  /api/scores/* - Rotas de score e antifraude');
+      console.log('   GET  /api/automation/status - Status dos jobs de automação');
+
+      // Iniciar jobs de automação
+      console.log('\n🤖 Iniciando sistema de automação...');
+      await automationService.startAllJobs();
+      console.log('✅ Sistema de automação iniciado com sucesso!');
     });
 
   } catch (error) {
@@ -147,11 +164,13 @@ const startServer = async () => {
 // Tratamento de sinais para shutdown graceful
 process.on('SIGTERM', () => {
   console.log('🛑 SIGTERM recebido, encerrando servidor...');
+  automationService.stopAllJobs();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('🛑 SIGINT recebido, encerrando servidor...');
+  automationService.stopAllJobs();
   process.exit(0);
 });
 

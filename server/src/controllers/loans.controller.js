@@ -1,11 +1,12 @@
 const { db } = require('../../db');
+const eventService = require('../services/eventService');
 
 /**
  * Controller para empréstimos
  * Seguindo boas práticas: responsabilidade única, tratamento de erros, validações
  */
 class LoansController {
-  
+
   /**
    * Listar empréstimos com filtros por role
    * @param {Object} req - Request object
@@ -14,7 +15,7 @@ class LoansController {
   static async list(req, res) {
     try {
       const { role: userRole, id: userId } = req.user;
-      
+
       console.log(`🔍 Listando empréstimos para usuário ${userId} (${userRole})`);
 
       const loans = await LoansController._getLoansByRole(userRole, userId);
@@ -43,7 +44,7 @@ class LoansController {
   static async listAvailable(req, res) {
     try {
       const { role: userRole, id: userId } = req.user;
-      
+
       console.log(`🔍 Listando empréstimos disponíveis para investidor ${userId}`);
 
       // Buscar empréstimos pendentes que precisam de financiamento
@@ -79,8 +80,8 @@ class LoansController {
         data: {
           loans: loansWithMatching,
           total: loansWithMatching.length,
-          filters: { 
-            role: userRole, 
+          filters: {
+            role: userRole,
             userId,
             status: 'available_for_investment'
           }
@@ -102,7 +103,7 @@ class LoansController {
     try {
       const { id } = req.params;
       const { role: userRole, id: userId } = req.user;
-      
+
       console.log(`🔍 Buscando empréstimo ${id} para usuário ${userId}`);
 
       const loan = await LoansController._getLoanById(id, userRole, userId);
@@ -151,6 +152,10 @@ class LoansController {
       const newLoan = await LoansController._createLoan(userId, loanData);
 
       console.log(`✅ Empréstimo criado com ID: ${newLoan.id}`);
+
+      // Disparar evento de novo empréstimo
+      await eventService.emitEvent('loan.created', { loan: newLoan });
+      console.log('🎯 Evento loan.created disparado');
 
       res.status(201).json({
         success: true,
@@ -211,7 +216,7 @@ class LoansController {
         .where('borrower_id', userId)
         .orderBy('created_at', 'desc');
     }
-    
+
     return await db('loans')
       .select('*')
       .orderBy('created_at', 'desc');
@@ -229,7 +234,7 @@ class LoansController {
         .where('borrower_id', userId)
         .first();
     }
-    
+
     return await db('loans')
       .select('*')
       .where('id', loanId)
@@ -266,7 +271,7 @@ class LoansController {
    */
   static _validateStatus(status) {
     const validStatuses = ['pending', 'approved', 'rejected', 'disbursed', 'completed', 'defaulted'];
-    
+
     if (!validStatuses.includes(status)) {
       return {
         isValid: false,
@@ -317,7 +322,7 @@ class LoansController {
    */
   static _handleError(res, error, operation) {
     console.error(`❌ Erro ao ${operation}:`, error);
-    
+
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor',

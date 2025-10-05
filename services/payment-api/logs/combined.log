@@ -757,3 +757,31 @@
 {"installments":24,"level":"\u001b[32minfo\u001b[39m","loanId":2,"message":"\u001b[32m[PAYMENT-ROUTES] Plano de pagamento criado com sucesso\u001b[39m","timestamp":"2025-10-04 23:49:29"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 02:24:25"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 02:24:25"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 07:00:41"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 07:00:41"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 07:04:50"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 07:04:50"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 07:09:51"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 07:09:51"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 07:19:10"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 07:19:10"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 07:26:04"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 07:26:04"}
+{"initial_balance":0,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[CUSTODY-ACCOUNTS] Criando conta de custódia\u001b[39m","timestamp":"2025-10-05 07:28:26","user_id":15,"user_type":"student"}
+{"initialBalance":0,"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[CUSTODY-SERVICE] Conta de custódia criada apenas em memória (banco indisponível)\u001b[39m","timestamp":"2025-10-05 07:28:29","userId":15,"userType":"student"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 07:40:02"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 07:40:02"}
+{"initial_balance":0,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[CUSTODY-ACCOUNTS] Criando conta de custódia\u001b[39m","timestamp":"2025-10-05 07:40:16","user_id":16,"user_type":"student"}
+{"initialBalance":0,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[CUSTODY-SERVICE] Conta de custódia criada no banco\u001b[39m","timestamp":"2025-10-05 07:40:17","userId":16,"userType":"student"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] System accounts initialized\u001b[39m","timestamp":"2025-10-05 07:52:16"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[PAYMENT-API] Payment API Mock rodando na porta 3002\u001b[39m","timestamp":"2025-10-05 07:52:16"}
+{"initial_balance":0,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[CUSTODY-ACCOUNTS] Criando conta de custódia\u001b[39m","timestamp":"2025-10-05 07:55:55","user_id":7,"user_type":"student"}
+{"initialBalance":0,"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[CUSTODY-SERVICE] Conta de custódia criada apenas em memória (banco indisponível)\u001b[39m","timestamp":"2025-10-05 07:55:56","userId":7,"userType":"student"}
+{"initial_balance":0,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[CUSTODY-ACCOUNTS] Criando conta de custódia\u001b[39m","timestamp":"2025-10-05 07:56:02","user_id":8,"user_type":"investor"}
+{"initialBalance":0,"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[CUSTODY-SERVICE] Conta de custódia criada apenas em memória (banco indisponível)\u001b[39m","timestamp":"2025-10-05 07:56:03","userId":8,"userType":"investor"}
+{"initial_balance":0,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[CUSTODY-ACCOUNTS] Criando conta de custódia\u001b[39m","timestamp":"2025-10-05 07:56:38","user_id":9,"user_type":"student"}
+{"initialBalance":0,"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[CUSTODY-SERVICE] Conta de custódia criada apenas em memória (banco indisponível)\u001b[39m","timestamp":"2025-10-05 07:56:38","userId":9,"userType":"student"}
+{"initial_balance":0,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[CUSTODY-ACCOUNTS] Criando conta de custódia\u001b[39m","timestamp":"2025-10-05 07:57:00","user_id":10,"user_type":"student"}
+{"initialBalance":0,"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[CUSTODY-SERVICE] Conta de custódia criada apenas em memória (banco indisponível)\u001b[39m","timestamp":"2025-10-05 07:57:00","userId":10,"userType":"student"}
+{"initial_balance":0,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[CUSTODY-ACCOUNTS] Criando conta de custódia\u001b[39m","timestamp":"2025-10-05 08:11:02","user_id":7,"user_type":"student"}
+{"initialBalance":0,"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[CUSTODY-SERVICE] Conta de custódia criada apenas em memória (banco indisponível)\u001b[39m","timestamp":"2025-10-05 08:11:04","userId":7,"userType":"student"}

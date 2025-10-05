@@ -1,11 +1,12 @@
 const { db } = require('../../db');
+const eventService = require('../services/eventService');
 
 /**
  * Controller para ofertas de investidores
  * Seguindo boas práticas: responsabilidade única, tratamento de erros, validações
  */
 class OffersController {
-  
+
   /**
    * Listar ofertas do investidor
    * @param {Object} req - Request object
@@ -14,7 +15,7 @@ class OffersController {
   static async list(req, res) {
     try {
       const { id: investorId } = req.user;
-      
+
       console.log(`🔍 Listando ofertas do investidor ${investorId}`);
 
       // Buscar ofertas deste investidor
@@ -47,7 +48,7 @@ class OffersController {
   static async create(req, res) {
     try {
       console.log('🔍 Iniciando criação de oferta...');
-      
+
       const { id: investorId } = req.user;
       const { amount_available, term_months, min_rate } = req.body;
 
@@ -63,15 +64,19 @@ class OffersController {
       }
 
       console.log('💾 Inserindo oferta no banco...');
-      
+
       const [newOffer] = await db('offers').insert({
         investor_id: investorId,
         amount_available: parseFloat(amount_available),
         term_months: parseInt(term_months) || 12,
         min_rate: parseFloat(min_rate) || 0.08
       }).returning('*');
-      
+
       console.log('✅ Oferta inserida com sucesso:', newOffer);
+
+      // Disparar evento de nova oferta
+      await eventService.emitEvent('offer.created', { offer: newOffer });
+      console.log('🎯 Evento offer.created disparado');
 
       res.status(201).json({
         success: true,
@@ -84,7 +89,7 @@ class OffersController {
     } catch (error) {
       console.error('❌ Erro ao criar oferta:', error.message);
       console.error('❌ Stack trace:', error.stack);
-      
+
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor',
@@ -102,7 +107,7 @@ class OffersController {
     try {
       const { id } = req.params;
       const { id: investorId } = req.user;
-      
+
       console.log(`🔍 Buscando oferta ${id} para investidor ${investorId}`);
 
       const offer = await db('offers')
@@ -231,7 +236,7 @@ class OffersController {
    */
   static _handleError(res, error, operation) {
     console.error(`❌ Erro ao ${operation}:`, error);
-    
+
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor',

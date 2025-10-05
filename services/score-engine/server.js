@@ -6,7 +6,7 @@ const swaggerSpecs = require('./swagger/swaggerConfig');
 const { createServiceLogger } = require('../shared/logger');
 const { createResponse, handleError } = require('../shared/utils');
 
-dotenv.config();
+dotenv.config({ path: require('path').resolve(__dirname, '../../.env') });
 
 // Importar rotas
 const scoreRoutes = require('./routes/scores');

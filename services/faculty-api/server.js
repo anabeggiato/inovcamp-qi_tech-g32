@@ -4,7 +4,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./swagger/swaggerConfig');
 const { createServiceLogger } = require('../shared/logger');
 const { createResponse, handleError, isValidId } = require('../shared/utils');
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 
 const app = express();
 const PORT = process.env.FACULTY_API_PORT || 3001;
