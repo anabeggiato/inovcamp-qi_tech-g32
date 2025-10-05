@@ -1,5 +1,6 @@
 const { generateId } = require('../../shared/utils');
 const { query, transaction } = require('../../shared/database');
+const { createServiceLogger } = require('../../shared/logger');
 const {
     calculateCompoundInterest,
     calculateDistribution,
@@ -11,6 +12,8 @@ const custodyService = require('../custody/custodyService');
 const paymentMethods = require('../payment-methods/paymentMethods');
 const ledgerService = require('../ledger/ledgerService');
 
+const logger = createServiceLogger('payment-service');
+
 /**
  * Serviço de Pagamentos
  * Gerencia todo o fluxo de pagamentos e custódia
@@ -20,6 +23,32 @@ const ledgerService = require('../ledger/ledgerService');
 let paymentPlans = {};
 let transactions = {};
 let ledger = {};
+
+/**
+ * Busca empréstimo por ID
+ */
+async function getLoanById(loanId) {
+    try {
+        logger.info(`Buscando empréstimo ID: ${loanId}`);
+        
+        const result = await query(`
+            SELECT * FROM loans WHERE id = $1
+        `, [loanId]);
+        
+        logger.info(`Resultado da query: ${JSON.stringify(result.rows)}`);
+        
+        if (result.rows.length === 0) {
+            logger.warn(`Empréstimo ${loanId} não encontrado`);
+            return null;
+        }
+        
+        logger.info(`Empréstimo encontrado: ${JSON.stringify(result.rows[0])}`);
+        return result.rows[0];
+    } catch (error) {
+        logger.error('Erro ao buscar empréstimo', error);
+        throw error;
+    }
+}
 
 /**
  * Opções de timing de pagamento
@@ -798,6 +827,7 @@ async function handleWebhook(paymentId, status, externalId) {
 
 module.exports = {
     PAYMENT_TIMING_OPTIONS,
+    getLoanById,
     createPaymentPlan,
     processPayment,
     getInstallmentsByLoan,
