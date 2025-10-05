@@ -1,5 +1,6 @@
 const express = require('express');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
+const { LoansController } = require('../controllers/loans.controller');
 
 const router = express.Router();
 
@@ -11,70 +12,28 @@ router.use(authenticateToken);
  * @desc    Listar todos os empréstimos (com filtros por role)
  * @access  Private
  */
-router.get('/', (req, res) => {
-  const userRole = req.user.role;
-  
-  res.json({
-    success: true,
-    message: `Endpoint placeholder - Listar empréstimos (${userRole})`,
-    data: {
-      loans: [],
-      filters: {
-        role: userRole,
-        status: 'all'
-      },
-      note: 'Implementar lógica para filtrar empréstimos baseado no role do usuário'
-    }
-  });
-});
+router.get('/', LoansController.list);
 
 /**
  * @route   GET /api/loans/:id
  * @desc    Obter detalhes de um empréstimo específico
  * @access  Private
  */
-router.get('/:id', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Endpoint placeholder - Detalhes do empréstimo',
-    data: {
-      loanId: req.params.id,
-      loan: null,
-      note: 'Implementar lógica para buscar empréstimo específico'
-    }
-  });
-});
+router.get('/:id', LoansController.getById);
 
 /**
  * @route   POST /api/loans
  * @desc    Criar novo empréstimo (apenas estudantes)
  * @access  Private (Student)
  */
-router.post('/', requireRole(['student']), (req, res) => {
-  res.json({
-    success: true,
-    message: 'Endpoint placeholder - Criar empréstimo',
-    data: {
-      note: 'Implementar lógica para criar novo empréstimo'
-    }
-  });
-});
+router.post('/', requireRole(['student']), LoansController.create);
 
 /**
  * @route   PUT /api/loans/:id/status
  * @desc    Atualizar status do empréstimo
  * @access  Private (Admin/System)
  */
-router.put('/:id/status', requireRole(['admin', 'system']), (req, res) => {
-  res.json({
-    success: true,
-    message: 'Endpoint placeholder - Atualizar status do empréstimo',
-    data: {
-      loanId: req.params.id,
-      note: 'Implementar lógica para atualizar status (aprovação, rejeição, etc.)'
-    }
-  });
-});
+router.put('/:id/status', requireRole(['admin', 'system']), LoansController.updateStatus);
 
 /**
  * @route   GET /api/loans/:id/matches

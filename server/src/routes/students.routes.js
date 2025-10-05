@@ -18,6 +18,20 @@ router.post('/', StudentsController.create);
 router.get('/', StudentsController.list);
 
 /**
+ * @route   GET /api/students/:id/academic-data
+ * @desc    Buscar dados acadêmicos do estudante (API da faculdade)
+ * @access  Public
+ */
+router.get('/:id/academic-data', StudentsController.getAcademicData);
+
+/**
+ * @route   GET /api/students/:id/score
+ * @desc    Buscar score do estudante (Score Engine)
+ * @access  Public
+ */
+router.get('/:id/score', StudentsController.getScore);
+
+/**
  * @route   GET /api/students/:id
  * @desc    Obter estudante por ID
  * @access  Public
