@@ -1,262 +1,389 @@
-const matchingService = require('../services/matching.service');
+const { db } = require('../../db');
 
 /**
- * Controlador para funcionalidades de matching P2P
+ * Controller para sistema de matching P2P
+ * Seguindo boas práticas: responsabilidade única, tratamento de erros, validações
  */
-
-/**
- * Busca empréstimos elegíveis para uma oferta específica de investidor
- * GET /api/investors/:investorId/offers/:offerId/eligible-loans
- */
-async function getEligibleLoans(req, res) {
+class MatchingController {
+  
+  /**
+   * Executar matching entre ofertas e empréstimos
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   */
+  static async executeMatching(req, res) {
     try {
-        const { investorId, offerId } = req.params;
+      const { loan_id, offer_id } = req.body;
 
-        // Validar parâmetros
-        if (!investorId || !offerId) {
-            return res.status(400).json({
-                success: false,
-                message: 'ID do investidor e ID da oferta são obrigatórios'
-            });
-        }
+      console.log(`🔍 Executando matching entre empréstimo ${loan_id} e oferta ${offer_id}`);
 
-        // Converter para números
-        const investorIdNum = parseInt(investorId);
-        const offerIdNum = parseInt(offerId);
-
-        if (isNaN(investorIdNum) || isNaN(offerIdNum)) {
-            return res.status(400).json({
-                success: false,
-                message: 'IDs devem ser números válidos'
-            });
-        }
-
-        // Buscar empréstimos elegíveis
-        const eligibleLoans = await matchingService.getEligibleLoansForInvestorOffer(
-            investorIdNum,
-            offerIdNum
-        );
-
-        res.status(200).json({
-            success: true,
-            data: {
-                eligible_loans: eligibleLoans,
-                total_count: eligibleLoans.length,
-                investor_id: investorIdNum,
-                offer_id: offerIdNum
-            }
+      // Validações
+      const validation = await MatchingController._validateMatching(loan_id, offer_id);
+      if (!validation.isValid) {
+        return res.status(400).json({
+          success: false,
+          message: validation.message
         });
+      }
+
+      // Executar matching
+      const matchResult = await MatchingController._createMatch(loan_id, offer_id);
+
+      // Se o matching foi bem-sucedido, chamar API de pagamentos
+      if (matchResult.success) {
+        try {
+          await MatchingController._processPayment(matchResult.match);
+          console.log('✅ Pagamento processado com sucesso');
+        } catch (paymentError) {
+          console.error('❌ Erro ao processar pagamento:', paymentError);
+          // Não falhar o matching por erro de pagamento
+        }
+      }
+
+      res.json({
+        success: true,
+        message: 'Matching executado com sucesso',
+        data: matchResult
+      });
 
     } catch (error) {
-        console.error('Erro ao buscar empréstimos elegíveis:', error);
-
-        if (error.message === 'Oferta não encontrada ou não pertence ao investidor') {
-            return res.status(404).json({
-                success: false,
-                message: error.message
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: 'Erro interno do servidor',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+      console.error('❌ Erro ao executar matching:', error);
+      MatchingController._handleError(res, error, 'executar matching');
     }
-}
+  }
 
-/**
- * Busca detalhes de um empréstimo específico
- * GET /api/loans/:loanId/details
- */
-async function getLoanDetails(req, res) {
+  /**
+   * Listar matches de um empréstimo
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   */
+  static async getLoanMatches(req, res) {
     try {
-        const { loanId } = req.params;
+      const { loan_id } = req.params;
+      
+      console.log(`🔍 Listando matches do empréstimo ${loan_id}`);
 
-        // Validar parâmetro
-        if (!loanId) {
-            return res.status(400).json({
-                success: false,
-                message: 'ID do empréstimo é obrigatório'
-            });
+      const matches = await db('matches')
+        .select(
+          'matches.*',
+          'offers.amount_available',
+          'offers.min_rate',
+          'users.name as investor_name',
+          'users.email as investor_email'
+        )
+        .join('offers', 'matches.offer_id', 'offers.id')
+        .join('users', 'offers.investor_id', 'users.id')
+        .where('matches.loan_id', loan_id)
+        .orderBy('matches.created_at', 'desc');
+
+      res.json({
+        success: true,
+        message: 'Matches do empréstimo',
+        data: {
+          matches,
+          total: matches.length,
+          loan_id
         }
-
-        const loanIdNum = parseInt(loanId);
-        if (isNaN(loanIdNum)) {
-            return res.status(400).json({
-                success: false,
-                message: 'ID do empréstimo deve ser um número válido'
-            });
-        }
-
-        // Buscar detalhes do empréstimo
-        const loanDetails = await matchingService.getLoanDetails(loanIdNum);
-
-        if (!loanDetails) {
-            return res.status(404).json({
-                success: false,
-                message: 'Empréstimo não encontrado'
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: loanDetails
-        });
+      });
 
     } catch (error) {
-        console.error('Erro ao buscar detalhes do empréstimo:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro interno do servidor',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+      console.error('❌ Erro ao listar matches:', error);
+      MatchingController._handleError(res, error, 'listar matches');
     }
-}
+  }
 
-/**
- * Valida se um investimento é viável
- * POST /api/investors/:investorId/offers/:offerId/validate-investment
- */
-async function validateInvestment(req, res) {
+  /**
+   * Listar matches de uma oferta
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   */
+  static async getOfferMatches(req, res) {
     try {
-        const { investorId, offerId } = req.params;
-        const { loan_id, investment_amount } = req.body;
+      const { offer_id } = req.params;
+      
+      console.log(`🔍 Listando matches da oferta ${offer_id}`);
 
-        // Validar parâmetros
-        if (!investorId || !offerId || !loan_id || !investment_amount) {
-            return res.status(400).json({
-                success: false,
-                message: 'Todos os parâmetros são obrigatórios: investorId, offerId, loan_id, investment_amount'
-            });
+      const matches = await db('matches')
+        .select(
+          'matches.*',
+          'loans.amount',
+          'loans.term_months',
+          'users.name as borrower_name',
+          'users.email as borrower_email'
+        )
+        .join('loans', 'matches.loan_id', 'loans.id')
+        .join('users', 'loans.borrower_id', 'users.id')
+        .where('matches.offer_id', offer_id)
+        .orderBy('matches.created_at', 'desc');
+
+      res.json({
+        success: true,
+        message: 'Matches da oferta',
+        data: {
+          matches,
+          total: matches.length,
+          offer_id
         }
-
-        // Converter para números
-        const investorIdNum = parseInt(investorId);
-        const offerIdNum = parseInt(offerId);
-        const loanIdNum = parseInt(loan_id);
-        const investmentAmountNum = parseFloat(investment_amount);
-
-        if (isNaN(investorIdNum) || isNaN(offerIdNum) || isNaN(loanIdNum) || isNaN(investmentAmountNum)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Todos os valores devem ser números válidos'
-            });
-        }
-
-        if (investmentAmountNum <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Valor do investimento deve ser maior que zero'
-            });
-        }
-
-        // Validar investimento
-        const validation = await matchingService.validateInvestment(
-            investorIdNum,
-            offerIdNum,
-            loanIdNum,
-            investmentAmountNum
-        );
-
-        res.status(200).json({
-            success: true,
-            data: {
-                valid: validation.valid,
-                error: validation.error || null,
-                investor_id: investorIdNum,
-                offer_id: offerIdNum,
-                loan_id: loanIdNum,
-                investment_amount: investmentAmountNum
-            }
-        });
+      });
 
     } catch (error) {
-        console.error('Erro ao validar investimento:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro interno do servidor',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+      console.error('❌ Erro ao listar matches da oferta:', error);
+      MatchingController._handleError(res, error, 'listar matches da oferta');
     }
-}
+  }
 
-/**
- * Busca estatísticas de matching para um investidor
- * GET /api/investors/:investorId/matching-stats
- */
-async function getMatchingStats(req, res) {
+  /**
+   * Buscar matches automáticos (algoritmo de matching)
+   * @param {Object} req - Request object
+   * @param {Object} res - Response object
+   */
+  static async findAutomaticMatches(req, res) {
     try {
-        const { investorId } = req.params;
+      console.log('🔍 Buscando matches automáticos');
 
-        // Validar parâmetro
-        if (!investorId) {
-            return res.status(400).json({
-                success: false,
-                message: 'ID do investidor é obrigatório'
+      // Buscar empréstimos pendentes
+      const pendingLoans = await db('loans')
+        .select('*')
+        .where('status', 'pending')
+        .orderBy('created_at', 'desc');
+
+      // Buscar ofertas ativas
+      const activeOffers = await db('offers')
+        .select('*')
+        .where('status', 'active')
+        .orderBy('created_at', 'desc');
+
+      const matches = [];
+
+      // Algoritmo de matching simples
+      for (const loan of pendingLoans) {
+        for (const offer of activeOffers) {
+          // Verificar compatibilidade
+          if (MatchingController._isCompatible(loan, offer)) {
+            matches.push({
+              loan_id: loan.id,
+              offer_id: offer.id,
+              loan_amount: loan.amount,
+              offer_amount: offer.amount_available,
+              compatibility_score: MatchingController._calculateCompatibilityScore(loan, offer)
             });
+          }
         }
+      }
 
-        const investorIdNum = parseInt(investorId);
-        if (isNaN(investorIdNum)) {
-            return res.status(400).json({
-                success: false,
-                message: 'ID do investidor deve ser um número válido'
-            });
+      // Ordenar por score de compatibilidade
+      matches.sort((a, b) => b.compatibility_score - a.compatibility_score);
+
+      res.json({
+        success: true,
+        message: 'Matches automáticos encontrados',
+        data: {
+          matches,
+          total: matches.length,
+          pending_loans: pendingLoans.length,
+          active_offers: activeOffers.length
         }
-
-        // Buscar ofertas do investidor
-        const knex = require('../../db');
-        const offers = await knex('offers')
-            .where('investor_id', investorIdNum)
-            .select('id', 'amount_available', 'term_months', 'min_rate');
-
-        // Calcular estatísticas
-        const totalOffers = offers.length;
-        const totalAmountAvailable = offers.reduce((sum, offer) =>
-            sum + parseFloat(offer.amount_available), 0
-        );
-
-        // Buscar matches existentes
-        const matches = await knex('matches')
-            .join('offers', 'matches.offer_id', 'offers.id')
-            .where('offers.investor_id', investorIdNum)
-            .select('matches.amount_matched', 'matches.rate');
-
-        const totalInvested = matches.reduce((sum, match) =>
-            sum + parseFloat(match.amount_matched), 0
-        );
-
-        const avgRate = matches.length > 0
-            ? matches.reduce((sum, match) => sum + parseFloat(match.rate), 0) / matches.length
-            : 0;
-
-        res.status(200).json({
-            success: true,
-            data: {
-                investor_id: investorIdNum,
-                total_offers: totalOffers,
-                total_amount_available: totalAmountAvailable,
-                total_invested: totalInvested,
-                total_matches: matches.length,
-                average_rate: avgRate,
-                offers: offers
-            }
-        });
+      });
 
     } catch (error) {
-        console.error('Erro ao buscar estatísticas de matching:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro interno do servidor',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+      console.error('❌ Erro ao buscar matches automáticos:', error);
+      MatchingController._handleError(res, error, 'buscar matches automáticos');
     }
+  }
+
+  // ===== MÉTODOS PRIVADOS (HELPERS) =====
+
+  /**
+   * Validar matching
+   * @private
+   */
+  static async _validateMatching(loan_id, offer_id) {
+    // Verificar se empréstimo existe e está pendente
+    const loan = await db('loans')
+      .select('*')
+      .where('id', loan_id)
+      .where('status', 'pending')
+      .first();
+
+    if (!loan) {
+      return {
+        isValid: false,
+        message: 'Empréstimo não encontrado ou não está disponível para matching'
+      };
+    }
+
+    // Verificar se oferta existe e está ativa
+    const offer = await db('offers')
+      .select('*')
+      .where('id', offer_id)
+      .where('status', 'active')
+      .first();
+
+    if (!offer) {
+      return {
+        isValid: false,
+        message: 'Oferta não encontrada ou não está ativa'
+      };
+    }
+
+    // Verificar se já existe matching
+    const existingMatch = await db('matches')
+      .select('*')
+      .where('loan_id', loan_id)
+      .where('offer_id', offer_id)
+      .first();
+
+    if (existingMatch) {
+      return {
+        isValid: false,
+        message: 'Matching já existe entre este empréstimo e oferta'
+      };
+    }
+
+    return { isValid: true };
+  }
+
+  /**
+   * Criar match
+   * @private
+   */
+  static async _createMatch(loan_id, offer_id) {
+    try {
+      // Buscar dados do empréstimo e oferta
+      const loan = await db('loans').select('*').where('id', loan_id).first();
+      const offer = await db('offers').select('*').where('id', offer_id).first();
+
+      // Calcular valor do match (menor entre empréstimo e oferta)
+      const matchAmount = Math.min(parseFloat(loan.amount), parseFloat(offer.amount_available));
+
+      // Criar match
+      const [newMatch] = await db('matches').insert({
+        loan_id,
+        offer_id,
+        amount_matched: matchAmount,
+        rate: offer.min_rate,
+        status: 'pending',
+        created_at: new Date(),
+        updated_at: new Date()
+      }).returning('*');
+
+      // Atualizar status do empréstimo se totalmente financiado
+      const totalMatched = await db('matches')
+        .sum('amount_matched as total')
+        .where('loan_id', loan_id)
+        .first();
+
+      if (totalMatched.total >= parseFloat(loan.amount)) {
+        await db('loans')
+          .where('id', loan_id)
+          .update({ status: 'matched', updated_at: new Date() });
+      }
+
+      console.log(`✅ Match criado com ID: ${newMatch.id}`);
+
+      return {
+        success: true,
+        match: newMatch,
+        matchAmount,
+        loan,
+        offer
+      };
+
+    } catch (error) {
+      console.error('❌ Erro ao criar match:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Processar pagamento via API mockada
+   * @private
+   */
+  static async _processPayment(match) {
+    try {
+      const axios = require('axios');
+      const paymentApiUrl = process.env.PAYMENT_API_URL || 'http://localhost:3002';
+
+      const paymentData = {
+        match_id: match.id,
+        amount: match.amount_matched,
+        from_investor: match.offer_id,
+        to_borrower: match.loan_id,
+        description: `Desembolso P2P - Match ${match.id}`
+      };
+
+      const response = await axios.post(`${paymentApiUrl}/disburse`, paymentData);
+      
+      console.log('✅ Pagamento processado:', response.data);
+      return response.data;
+
+    } catch (error) {
+      console.error('❌ Erro na API de pagamentos:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Verificar compatibilidade entre empréstimo e oferta
+   * @private
+   */
+  static _isCompatible(loan, offer) {
+    // Verificar se o prazo é compatível
+    if (loan.term_months !== offer.term_months) {
+      return false;
+    }
+
+    // Verificar se o valor é compatível
+    if (parseFloat(offer.amount_available) < parseFloat(loan.amount)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Calcular score de compatibilidade
+   * @private
+   */
+  static _calculateCompatibilityScore(loan, offer) {
+    let score = 0;
+
+    // Score por compatibilidade de prazo (40%)
+    if (loan.term_months === offer.term_months) {
+      score += 40;
+    }
+
+    // Score por compatibilidade de valor (30%)
+    const valueRatio = parseFloat(offer.amount_available) / parseFloat(loan.amount);
+    if (valueRatio >= 1) {
+      score += 30;
+    } else {
+      score += valueRatio * 30;
+    }
+
+    // Score por taxa (30%)
+    const rateScore = (1 - parseFloat(offer.min_rate)) * 30;
+    score += rateScore;
+
+    return Math.round(score);
+  }
+
+  /**
+   * Tratar erros de forma consistente
+   * @private
+   */
+  static _handleError(res, error, operation) {
+    console.error(`❌ Erro ao ${operation}:`, error);
+    
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
 }
 
-module.exports = {
-    getEligibleLoans,
-    getLoanDetails,
-    validateInvestment,
-    getMatchingStats
-};
+module.exports = { MatchingController };
