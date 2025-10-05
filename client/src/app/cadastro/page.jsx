@@ -1,6 +1,7 @@
 "use client"
 import { useState } from 'react'
 import { GraduationCap, DollarSign, ArrowLeft } from 'lucide-react'
+import { authService } from '@/services/authService';
 
 export default function Register() {
     const roleMapping = {
@@ -28,13 +29,24 @@ export default function Register() {
         }));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         const dataToSend = {
             ...user,
-            role: roleMapping[user.role],  
+            role: roleMapping[user.role],
         };
 
-        console.log('Enviando dados para o backend:', dataToSend);
+        try {
+            const response = await authService.register(dataToSend);
+            if (response?.success) {
+                console.log('Cadastro realizado com sucesso!');
+                window.location.href = '/login';
+            } else {
+                console.error('Erro ao cadastrar usuário:', response?.message);
+            }
+        } catch (error) {
+            console.error('Erro ao cadastrar usuário:', error);
+        }
     };
 
     return (
@@ -124,7 +136,7 @@ export default function Register() {
 
                     <button
                         className={`flex items-center justify-center gap-2 p-2 text-white w-full rounded-lg mt-4 ${user.role === "Estudante" ? "bg-primary hover:bg-primary/90" : "bg-sea-green hover:bg-sea-green/90"}`}
-                        onClick={handleSubmit} // Adicionando a lógica de envio do formulário
+                        onClick={handleSubmit}
                     >
                         {user.role === "Estudante" ? <GraduationCap /> : <DollarSign />}
                         Criar Conta de {user.role}
