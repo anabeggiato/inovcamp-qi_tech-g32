@@ -1,19 +1,39 @@
+"use client"
 import CardFastAction from '@/app/components/CardFastAction'
 import CardInfoEmprestimo from '@/app/components/CardInfoEmprestimo'
 import Footer from '@/app/components/Footer'
 import Header from '@/app/components/Header'
 import ProgressBar from '@/app/components/ProgressBar'
+import Solicitation from './Solicitation'
 import { DollarSign, Clock, GraduationCap, CheckCircle2, AlertCircle, TrendingUp, FileText } from 'lucide-react'
+import { useState } from 'react'
 
 export default function StudentPage() {
+    const [showPopup, setShowPopup] = useState(false);
+
+    const institutions = [
+        { id: 1, name: "Universidade Federal XPTO" },
+        { id: 2, name: "Centro Universitário ABC" },
+        { id: 3, name: "Instituto Tecnológico QI" },
+    ];
+
+    const scoreData = { credit_score: 845, risk_band: "A", fraud_status: "Sem indícios" };
+
     return (
         <div className="min-h-screen w-screen bg-background mt-15">
             <Header />
             <main className="flex flex-col items-center px-64 text-center text-gray-500 pt-8 space-y-8">
                 {/*Título*/}
-                <section className='text-left w-full space-y-2'>
-                    <h1 className='text-4xl text-black font-bold'>Olá, Usuário!</h1>
-                    <p>Acompanhe seu financiamento e sesempenho acadêmico</p>
+                <section className='w-full grid grid-cols-2 mt-8'>
+                    <div className='w-full text-left space-y-2'>
+                        <h1 className='text-4xl text-black font-bold'>Olá, Usuário!</h1>
+                        <p>Acompanhe seu financiamento e sesempenho acadêmico</p>
+                    </div>
+
+                    <div className='w-full flex justify-end'>
+                        <button className='bg-white p-2 text-black rounded-lg hover:bg-primary hover:text-white' onClick={() => setShowPopup(!showPopup)}>Solicitar Crédito</button>
+                    </div>
+                    <Solicitation showPopup={showPopup} setShowPopup={setShowPopup} institutions={institutions} scoreData={scoreData} onSubmit={(payload) => { console.log("Enviar pro backend:", payload); }} />
                 </section>
 
                 {/*Score*/}
@@ -91,7 +111,7 @@ export default function StudentPage() {
                             <ProgressBar progress={95} />
                         </div>
 
-                        <hr className='my-8 border border-border'/>
+                        <hr className='my-8 border border-border' />
 
                         <div className='w-full flex rounded-lg bg-success-green/10 p-4'>
                             <TrendingUp className='text-success-green' size={20} pt-1 />
