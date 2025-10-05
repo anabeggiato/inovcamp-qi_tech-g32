@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Fragment } from 'react'
 import { Listbox, Transition } from '@headlessui/react'
 import { Filter, ChevronDown, Check, GraduationCap, Shield, TrendingUp } from 'lucide-react'
+import { http } from "@/services/http";
 
 const SCORE_OPTS = [
     { id: 'A+', label: 'A+ (900+)' },
@@ -151,6 +152,23 @@ export default function OpportunitiesVision() {
         return "bg-muted text-gray-500";
     };
 
+    const [recommendations, setRecommendations] = useState([]);
+
+    useEffect(() => {
+        http.get("/recommendations/matching")
+            .then((payload) => {
+                const arr = Array.isArray(payload?.data?.matches)
+                    ? payload.data.matches
+                    : [];
+                setRecommendations(arr);
+                console.log("Recomendações normalizadas:", arr);
+            })
+            .catch((err) => {
+                console.error("Erro ao buscar recomendações:", err);
+            });
+    }, []);
+
+
     return (
         <div className='w-full space-y-8'>
             <section className='grid grid-cols-4 gap-8 p-4 border border-border rounded-md'>
@@ -168,7 +186,7 @@ export default function OpportunitiesVision() {
             </section>
 
             <section className="space-y-6">
-                {oportunidades.map((oport) => (
+                {length !== 0 ? recommendations.map((oport) => (
                     <div key={oport.id} className="border border-border rounded-2xl p-4 hover:shadow-sm transition-all p-8">
                         <div>
                             <div className="flex justify-between items-start">
@@ -236,7 +254,7 @@ export default function OpportunitiesVision() {
                             </div>
                         </div>
                     </div>
-                ))}
+                )) : (<p>Não há recomendações compatíveis com o seu perfil no momento</p>)}
             </section>
 
             <section className='flex gap-4 bg-primary/10 rounded-lg border border-border p-8 mb-32'>
