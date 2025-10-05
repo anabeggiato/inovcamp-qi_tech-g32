@@ -241,7 +241,7 @@ class LoansController {
    * @private
    */
   static _validateLoanData(data) {
-    const { amount, term_months } = data;
+    const { amount, term_months, school_id, graduation_date } = data;
 
     if (!amount || amount <= 0) {
       return {
@@ -254,6 +254,20 @@ class LoansController {
       return {
         isValid: false,
         message: 'Prazo do empréstimo é obrigatório e deve ser maior que zero'
+      };
+    }
+
+    if (!school_id) {
+      return {
+        isValid: false,
+        message: 'Instituição (school_id) é obrigatória'
+      };
+    }
+
+    if (!graduation_date) {
+      return {
+        isValid: false,
+        message: 'Previsão de formatura (graduation_date) é obrigatória'
       };
     }
 
@@ -282,13 +296,32 @@ class LoansController {
    * @private
    */
   static async _createLoan(userId, loanData) {
-    const { amount, term_months } = loanData;
+    const {
+      amount,
+      term_months,
+      school_id,
+      graduation_date,
+      course,
+      entrance_year,
+      purpose,
+      notes
+    } = loanData;
 
     const [newLoan] = await db('loans').insert({
       borrower_id: userId,
+      school_id,
       amount,
       term_months,
-      status: 'pending'
+      graduation_date: graduation_date ? new Date(graduation_date) : null,
+      status: 'pending',
+      contract_json: {
+        course: course || null,
+        entrance_year: entrance_year || null,
+        purpose: purpose || null,
+        notes: notes || null
+      },
+      created_at: new Date(),
+      updated_at: new Date()
     }).returning('*');
 
     return newLoan;

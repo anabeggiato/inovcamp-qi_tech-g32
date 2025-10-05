@@ -6,6 +6,7 @@ import HeaderInterna from '@/app/components/HeaderInterna'
 import ProgressBar from '@/app/components/ProgressBar'
 import ProtectedRoute from '@/app/components/ProtectedRoute'
 import Solicitation from './Solicitation'
+import { loansService } from '@/services/loansService'
 import { DollarSign, Clock, GraduationCap, CheckCircle2, AlertCircle, TrendingUp, FileText } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { authService } from '@/services/authService'
@@ -51,7 +52,28 @@ export default function StudentPage() {
                         <div className='w-full flex justify-end'>
                             <button className='bg-primary text-white p-2 text-black rounded-lg hover:shadow-md hover:bg-primary/85' onClick={() => setShowPopup(!showPopup)}>Solicitar Crédito</button>
                         </div>
-                        <Solicitation showPopup={showPopup} setShowPopup={setShowPopup} institutions={institutions} scoreData={scoreData} onSubmit={(payload) => { console.log("Enviar pro backend:", payload); }} />
+                        <Solicitation
+                          showPopup={showPopup}
+                          setShowPopup={setShowPopup}
+                          institutions={institutions}
+                          scoreData={scoreData}
+                          onSubmit={async (payload) => {
+                            try {
+                              await loansService.create({
+                                amount: payload.amount,
+                                term_months: payload.termMonths,
+                                school_id: payload.school_id,
+                                course: payload.course,
+                                entrance_year: payload.entrance_year,
+                                graduation_date: payload.graduation_date,
+                                purpose: payload.purpose,
+                                notes: payload.notes,
+                              });
+                            } catch (e) {
+                              console.error('Falha ao criar solicitação de empréstimo', e);
+                            }
+                          }}
+                        />
                     </section>
 
                     {/*Score*/}
