@@ -12,7 +12,8 @@
     "seed:run": "knex seed:run",
     "db:reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run",
     "db:test": "knex migrate:latest && knex seed:run && node test-db.js",
-    "test:api": "node test-api.js"
+    "test:api": "node test-api.js",
+    "setup:payment-api": "node setup-payment-api.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

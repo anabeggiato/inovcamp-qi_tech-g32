@@ -113,4 +113,8 @@ exports.seed = async function (knex) {
   });
 
   console.log("Demo seed executed successfully!");
+  
+  // Executar seed da Payment API
+  const paymentApiSeed = require('./002_payment_api_data');
+  await paymentApiSeed.seed(knex);
 };
