@@ -1,209 +1,205 @@
-# QiTech - Plataforma de Financiamento Educacional
+### QiTech - Plataforma de Financiamento Educacional
 
-> **Fintech inovadora que conecta estudantes, investidores e instituições de ensino através de um marketplace de financiamento educacional.**
+Documentação oficial para executar o projeto. Conteúdo objetivo, profissional e pronto para rodar.
 
-## 🚀 **Visão Geral**
+### Sumário
 
-A QiTech é uma plataforma completa que democratiza o acesso ao financiamento educacional, oferecendo:
+- Requisitos
+- Visão geral dos serviços e portas
+- Instalação rápida (todos os serviços)
+- Execução manual por serviço
+- Banco de dados, migrations e seeds
+- Teste rápido (health checks e login)
+- Usuários de teste
+- Dicas de troubleshooting (Windows/PowerShell)
 
-- **Para Estudantes**: Empréstimos educacionais com taxas competitivas
-- **Para Investidores**: Oportunidades de investimento com retorno atrativo
-- **Para Instituições**: Ferramentas de gestão e integração financeira
+### Requisitos
 
-## 📁 **Estrutura do Projeto**
+- Node.js 18+ (recomendado 18 LTS ou 20 LTS)
+- npm 8+
+- Windows PowerShell ou terminal equivalente
 
+Observação: O backend já vem configurado para usar um PostgreSQL gerenciado (Render). Não é necessário ter Postgres local.
+
+### Serviços e Portas
+
+- Frontend `client` (Next.js): http://localhost:3000
+- Backend principal `server` (Express): http://localhost:5000
+- Mock Faculty API: http://localhost:3001
+- Mock Payment API: http://localhost:3002
+- Score Engine: http://localhost:3003
+
+Endpoints de health:
+
+- Backend: `GET http://localhost:5000/health`
+- Faculty: `GET http://localhost:3001/health`
+- Payment: `GET http://localhost:3002/health`
+- Score: `GET http://localhost:3003/health`
+
+### Instalação Rápida (todos os serviços)
+
+Execute na raiz do repositório:
+
+```bash
+npm run install:all
 ```
-qitech/
-├── client/          # Frontend (Next.js)
-├── server/          # Backend (Node.js/Express)
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── routes/
-│   │   ├── db/
-│   │   ├── utils/
-│   │   └── server.js
-│   ├── db/
-│   │   ├── migrations/
-│   │   └── seeds/
-│   ├── package.json
-│   ├── config.js
-│   └── README.md
-├── docs/           # Documentação
-└── README.md       # Este arquivo
+
+Isso instala as dependências do backend e dos mocks (payment, score, faculty). Para o frontend, instale separadamente:
+
+```bash
+cd client && npm install
 ```
 
-## 🛠️ **Tecnologias**
+Aplicar migrations e seeds do backend (necessário na primeira execução):
 
-### **Frontend**
-- **Next.js** - Framework React
-- **Tailwind CSS** - Estilização
-- **Componentes reutilizáveis**
+```bash
+cd server
+npm run migrate:latest
+npm run seed:run
+```
 
-### **Backend**
-- **Node.js** - Runtime JavaScript
-- **Express.js** - Framework web
-- **PostgreSQL** - Banco de dados
-- **JWT** - Autenticação
-- **Knex.js** - Query builder
+Iniciar todos os serviços utilitários + backend (em paralelo):
 
-### **Banco de Dados**
-- **PostgreSQL** (Render)
-- **Migrations** versionadas
-- **Seeds** para dados de teste
-- **Triggers** e **Functions** PL/pgSQL
+```bash
+cd ..
+npm start
+```
 
-## 🚀 **Início Rápido**
+O comando acima usa `start-all-services.js` para subir:
 
-### **1. Server (API)**
+- Faculty API (3001)
+- Payment API (3002)
+- Score Engine (3003)
+- Backend (5000)
+
+Em outra janela, subir o frontend:
+
+```bash
+cd client
+npm run dev
+```
+
+Aplicação acessível em `http://localhost:3000`.
+
+### Execução Manual por Serviço
+
+Você pode subir cada serviço separadamente conforme necessidade.
+
+Backend principal (`server`):
+
 ```bash
 cd server
 npm install
 npm run migrate:latest
 npm run seed:run
-npm run dev
+npm run dev   # Porta 5000
 ```
 
-### **2. Frontend (Website)**
+Frontend (`client`):
+
 ```bash
 cd client
 npm install
-npm run dev
+npm run dev   # Porta 3000
 ```
 
-### **3. Documentação**
+Mock Faculty API:
+
 ```bash
-cd docs
+cd services/faculty-api
 npm install
-npm start
+npm start      # Porta 3001
 ```
 
-## 📚 **Documentação**
-
-- **[Server API](./server/README.md)** - Documentação completa da API
-- **[Documentação Técnica](./docs/)** - Arquitetura, banco de dados e fluxos
-- **[Banco de Dados](./docs/docs/4.%20Banco%20de%20dados/)** - Estrutura e modelagem
-
-## 🔐 **Autenticação**
-
-### **Usuários de Teste**
-| Email | Senha | Role |
-|-------|-------|------|
-| alice@test.com | 123456 | student |
-| bob@test.com | 123456 | investor |
-| charlie@test.com | 123456 | student |
-
-### **Endpoints Principais**
-- `POST /api/auth/login` - Login
-- `GET /api/auth/verify` - Verificar token
-- `GET /api/students/*` - Rotas de estudantes
-- `GET /api/investors/*` - Rotas de investidores
-- `GET /api/loans/*` - Rotas de empréstimos
-
-## 🏗️ **Arquitetura**
-
-### **Server**
-- **API RESTful** com Express.js
-- **Autenticação JWT** com middleware
-- **Banco PostgreSQL** com Knex.js
-- **Validação** de dados
-- **Segurança** com Helmet e CORS
-
-### **Frontend**
-- **Next.js** com App Router
-- **Componentes** reutilizáveis
-- **Responsive Design**
-- **SEO** otimizado
-
-### **Banco de Dados**
-- **10 tabelas** principais
-- **4 views** para consultas
-- **15 funções** PostgreSQL
-- **Triggers** automáticos
-- **Ledger** de dupla entrada
-
-## 🧪 **Testes**
+Mock Payment API:
 
 ```bash
-# Testar API
+cd services/payment-api
+npm install
+npm start      # Porta 3002
+```
+
+Score Engine:
+
+```bash
+cd services/score-engine
+npm install
+npm start      # Porta 3003
+```
+
+### Banco de Dados, Migrations e Seeds
+
+O backend usa PostgreSQL via `server/config.js` (URL já configurada para Render). Comandos:
+
+```bash
 cd server
-npm run test:api
-
-# Testar banco
-npm run db:test
+npm run migrate:status
+npm run migrate:latest
+npm run seed:run
+npm run db:reset   # rollback all + latest + seed
 ```
 
-## 📊 **Funcionalidades**
+Importante:
 
-### **Para Estudantes**
-- ✅ Solicitar empréstimos
-- ✅ Acompanhar score de crédito
-- ✅ Histórico de performance acadêmica
-- ✅ Dashboard personalizado
+- Caso precise apontar para outro banco, ajuste a `connectionString` em `server/config.js` ou forneça `process.env.DATABASE_URL` e adapte `knexfile.js` para usar a env.
+- SSL já está habilitado no `knexfile.js`.
 
-### **Para Investidores**
-- ✅ Criar ofertas de investimento
-- ✅ Portfólio de investimentos
-- ✅ Analytics e métricas
-- ✅ Gestão de risco
+### Teste Rápido
 
-### **Para Instituições**
-- ✅ Gestão de estudantes
-- ✅ Relatórios financeiros
-- ✅ Integração com sistemas
-- ✅ Analytics institucionais
+Health checks:
 
-## 🔧 **Scripts Disponíveis**
-
-### **Server**
 ```bash
-npm start          # Produção
-npm run dev        # Desenvolvimento
-npm run test:api   # Testar API
-npm run migrate:latest  # Executar migrations
-npm run seed:run   # Popular banco
+curl http://localhost:5000/health
+curl http://localhost:3001/health
+curl http://localhost:3002/health
+curl http://localhost:3003/health
 ```
 
-### **Frontend**
+Login (backend):
+
 ```bash
-npm run dev        # Desenvolvimento
-npm run build      # Build produção
-npm start          # Servidor produção
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "alice@test.com", "password": "123456"}'
 ```
 
-## 🌟 **Diferenciais**
+Após logar, use o token em endpoints protegidos, por exemplo:
 
-- **Matching Automático** entre empréstimos e ofertas
-- **Score de Crédito Dinâmico** baseado em performance acadêmica
-- **Antifraude** integrado
-- **Monetização** automática com taxas
-- **Ledger** de dupla entrada para auditoria
-- **Contratos Digitais** com JSON
+```bash
+curl -H "Authorization: Bearer SEU_TOKEN" http://localhost:5000/api/students/profile
+```
 
-## 📈 **Roadmap**
+### Usuários de Teste
 
-- [ ] **Fase 1**: MVP com funcionalidades básicas ✅
-- [ ] **Fase 2**: Integração com bancos
-- [ ] **Fase 3**: App mobile
-- [ ] **Fase 4**: IA para recomendações
-- [ ] **Fase 5**: Expansão internacional
+- `alice@test.com` / `123456` (student)
+- `bob@test.com` / `123456` (investor)
+- `charlie@test.com` / `123456` (student)
 
-## 🤝 **Contribuição**
+### Dicas de Troubleshooting (Windows/PowerShell)
 
-1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
+- Porta em uso: finalize processos que ocupem `3000-3003` e `5000` ou altere a porta do serviço necessário.
+- CORS: o backend está configurado para aceitar `http://localhost:3000`. Se mudar a porta do frontend, ajuste em `server/src/server.js` (origem do CORS).
+- Falha ao conectar no banco: verifique sua rede/VPN. Se trocar o banco, atualize `server/config.js` e rode as migrations/seeds novamente.
+- Node/nodemon não encontrados: confirme Node 18+ e rode `npm install` no diretório do serviço.
+- Saída do `npm start` (raiz) mostra as URLs. O backend atende em `http://localhost:5000` (ignore qualquer log antigo indicando 3000).
 
-## 📄 **Licença**
+### Scripts Úteis (raiz)
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+```bash
+npm run install:all   # Instala deps backend + mocks
+npm start             # Sobe mocks + backend em paralelo
+npm run start:server  # Apenas backend (server)
+npm run start:payment # Apenas Payment API
+npm run start:score   # Apenas Score Engine
+npm run start:faculty # Apenas Faculty API
+```
 
-## 👥 **Equipe**
+### Documentação Relacionada
 
-Desenvolvido pela **equipe QiTech** para o **InovCamp QI Tech G32**.
+- Backend: `server/READMEBACKEND.md`
+- Pagamentos (mock): `server/README-PAYMENT-API.md`
+- Documentação Docusaurus: `docs/`
 
----
+—
 
-**Desenvolvido com ❤️ para democratizar o acesso à educação**
+Projeto QI-EDU – InovCamp QI Tech G32.
