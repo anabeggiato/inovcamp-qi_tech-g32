@@ -1,9 +1,11 @@
 "use client"
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { GraduationCap, DollarSign, ArrowLeft } from 'lucide-react'
 import { authService } from '@/services/authService';
 
 export default function Register() {
+    const router = useRouter();
     const roleMapping = {
         'Estudante': 'student',
         'Investidor': 'investor'
@@ -14,7 +16,7 @@ export default function Register() {
         cpf: '',
         email: '',
         password: '',
-        role: 'Estudante',  
+        role: 'Estudante',
     });
 
     const handleSelectRole = (role) => {
@@ -40,7 +42,15 @@ export default function Register() {
             const response = await authService.register(dataToSend);
             if (response?.success) {
                 console.log('Cadastro realizado com sucesso!');
-                window.location.href = '/login';
+                // Redirecionar baseado no role do usuário
+                const userRole = response.data.user.role;
+                if (userRole === 'student') {
+                    router.push("/dashboard/estudante");
+                } else if (userRole === 'investor') {
+                    router.push("/dashboard/investidor");
+                } else {
+                    router.push("/login");
+                }
             } else {
                 console.error('Erro ao cadastrar usuário:', response?.message);
             }
