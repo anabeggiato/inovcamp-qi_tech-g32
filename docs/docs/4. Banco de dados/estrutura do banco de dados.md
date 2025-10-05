@@ -32,37 +32,47 @@ sidebar_position: 4
 ### Migrations
 
 - **Função:** versionar e criar/alterar tabelas do banco de forma reproduzível.
-- **Ferramenta usada:** [Knex.js](https://knexjs.org/), permitindo definir migrations em JavaScript.
-- **Fluxo de uso:**
-  1. Criar migration: `npx knex migrate:make create_users_table`
-  2. Rodar todas as migrations: `npx knex migrate:latest --knexfile knexfile.js`
-  3. Cada migration cria ou altera tabelas com controle de versão (coluna `id` autoincrement, constraints, foreign keys).
+- **Ferramenta usada:** [Knex.js](https://knexjs.org/), migrations em JavaScript.
+- **Como rodar (no diretório `server/`):**
+  - `npm run migrate:latest`
+  - `npm run migrate:rollback`
+  - `npm run migrate:status`
+  - Para reset completo: `npm run db:reset`
 
 ### Seeds
 
 - **Função:** popular o banco com dados iniciais para testes e demos.
-- **Exemplo:** tabela `users`, `offers` e `loans` recebem registros iniciais de teste.
-- **Comando:** `npx knex seed:run --knexfile knexfile.js`
-- **Benefício:** garante que qualquer desenvolvedor ou ambiente consiga reproduzir dados de teste consistentes.
+- **Exemplo:** `users`, `offers`, `loans`, entre outras.
+- **Como rodar (no diretório `server/`):** `npm run seed:run`
+- **Benefício:** qualquer ambiente consegue reproduzir dados de teste consistentes.
 
-> Observação: migrations + seeds permitem que o banco seja reconstruído do zero rapidamente, essencial em hackathons e deploys em ambientes diferentes (local, staging, render).
+> Observação: migrations + seeds permitem reconstruir o banco rapidamente (local/staging/prod com pipeline controlado).
 
 ---
 
 ## 4. Modelagem do Banco de Dados
 
-| Tabela                   | Principais Campos                                                                                                                                                                     | Descrição                                                        |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| **users**                | id, name, cpf, email, is_system, role, fraud_score, fraud_status, credit_score, risk_band                                                                                             | Dados cadastrais + snapshots de antifraude e score de crédito    |
-| **institutions**         | id, name, integration_meta, institution_user_id                                                                                                                                       | Informações de instituições de ensino + usuário sistema          |
-| **loans**                | id, borrower_id, school_id, custody_user_id, amount, term_months, status, contract_json, origination_pct, marketplace_pct, custody_pct_monthly, spread_pct_annual, revenue_first_year | Pedidos de empréstimo + campos de monetização                    |
-| **offers**               | id, investor_id, amount_available, term_months, min_rate                                                                                                                              | Ofertas de investimento dos investidores                         |
-| **matches**              | id, loan_id, offer_id, amount_matched, rate                                                                                                                                           | Relacionamento entre pedidos e ofertas (fracionamento permitido) |
-| **ledger**               | id, account_type, user_id, account_ref, amount, dc, ref, meta                                                                                                                         | Lançamentos de dupla entrada para saldos e pagamentos            |
-| **frauds**               | id, user_id, type, severity, payload                                                                                                                                                  | Histórico de sinais antifraude                                   |
-| **scores**               | id, user_id, score, risk_band, reason_json                                                                                                                                            | Histórico de cálculos de score de crédito                        |
-| **academic_performance** | id, user_id, school_id, period, grade_avg, attendance_pct, status, meta                                                                                                               | Histórico acadêmico para cálculo de score                        |
-| **loan_fees**            | id, loan_id, fee_type, amount, period_start, period_end, charged_at, ledger_ref, meta                                                                                                 | Audit trail de taxas cobradas por empréstimo                     |
+| Tabela                     | Principais Campos                                                                                                                                                                            | Descrição                                                         |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **users**                  | id, name, cpf, email, is_system, role, fraud_score, fraud_status, credit_score, risk_band                                                                                                    | Dados cadastrais + snapshots de antifraude e score de crédito     |
+| **institutions**           | id, name, integration_meta, institution_user_id                                                                                                                                              | Informações de instituições de ensino + usuário sistema           |
+| **loans**                  | id, borrower_id, school_id, custody_user_id, amount, term_months, status, contract_json, origination_pct, marketplace_pct, custody_pct_monthly, spread_pct_annual, revenue_first_year        | Pedidos de empréstimo + campos de monetização                     |
+| **offers**                 | id, investor_id, amount_available, term_months, min_rate                                                                                                                                     | Ofertas de investimento dos investidores                          |
+| **matches**                | id, loan_id, offer_id, amount_matched, rate                                                                                                                                                  | Relacionamento entre pedidos e ofertas (fracionamento permitido)  |
+| **ledger**                 | id, account_type, user_id, account_ref, amount, dc, ref, meta                                                                                                                                | Lançamentos de dupla entrada para saldos e pagamentos             |
+| **frauds**                 | id, user_id, type, severity, payload                                                                                                                                                         | Histórico de sinais antifraude                                    |
+| **scores**                 | id, user_id, score, risk_band, reason_json                                                                                                                                                   | Histórico de cálculos de score de crédito                         |
+| **academic_performance**   | id, user_id, school_id, period, grade_avg, attendance_pct, status, meta                                                                                                                      | Histórico acadêmico para cálculo de score                         |
+| **loan_fees**              | id, loan_id, fee_type, amount, period_start, period_end, charged_at, ledger_ref, meta                                                                                                        | Audit trail de taxas cobradas por empréstimo                      |
+| **installments**           | id, loan_id, number, amount, principal_amount, interest_amount, due_date, status, payment_date, paid_amount, payment_phase, investor_share, qi_edu_fee_share, payment_method, transaction_id | Parcelas do empréstimo e status de pagamento                      |
+| **payment_methods**        | id, user_id, type, identifier, is_active, is_default, meta                                                                                                                                   | Métodos de pagamento do usuário (PIX, boleto, cartão, etc.)       |
+| **payment_transactions**   | id, installment_id, payment_method_id, amount, status, external_transaction_id, fees, net_amount, meta, processed_at                                                                         | Transações de pagamento vinculadas às parcelas                    |
+| **loan_payment_schedules** | id, loan_id, schedule_type, total_installments, monthly_payment, first_payment_date, last_payment_date, is_active                                                                            | Cronograma de pagamentos por empréstimo                           |
+| **custody_accounts**       | id, user_id, account_number, balance, email, phone, status                                                                                                                                   | Contas de custódia internas para movimentações                    |
+| **custody_transactions**   | id, custody_account_id, amount, payment_method, transaction_type, category, subcategory, description, status                                                                                 | Movimentações na custódia (depósitos, transferências, pagamentos) |
+| **payment_ledger**         | id, amount, category, subcategory, ref, meta, created_at                                                                                                                                     | Ledger específico da Payment API                                  |
+| **orchestrated_payments**  | id, installment_id, payment_method, status, meta                                                                                                                                             | Orquestrações de pagamento por parcela                            |
+| **payment_plans**          | id, loan_id, plan_type, payment_timing, installments_list                                                                                                                                    | Planos de pagamento agregando parcelas                            |
 
 ---
 
@@ -73,11 +83,14 @@ sidebar_position: 4
 3. **Score de Crédito:** cada cálculo é salvo em `scores`; snapshot em `users` atualizado (`credit_score`, `risk_band`).
 4. **Empréstimos (`loans`):** tomadores registram pedidos de empréstimo com campos de monetização.
 5. **Ofertas (`offers`):** investidores registram ofertas de investimento.
-6. **Matching:** pedidos e ofertas são casados automaticamente via função `match_loan()`, registrados em `matches`.
+6. **Matching:** pedidos e ofertas são casados automaticamente via função `match_loan()`, registrados em `matches` (status: matched/partial/open).
 7. **Ledger:** toda liberação, pagamento e repasse é registrado em dupla entrada (`ledger`).
 8. **Monetização:** taxas são cobradas automaticamente via triggers e funções, registradas em `loan_fees`.
-9. **Saldos:** consultados via `VIEW balances` ou funções agregadas.
-10. **Revenue:** receita calculada automaticamente via `VIEW revenue_by_loan`.
+9. **Parcelas:** geração de `installments`/`loan_payment_schedules` conforme cronograma.
+10. **Pagamentos:** cada tentativa/baixa gera `payment_transactions` e pode atualizar `installments`.
+11. **Custódia:** movimentações espelham-se em `custody_accounts`/`custody_transactions` e `payment_ledger`.
+12. **Saldos:** consultados via `VIEW balances` e `view_user_loans`.
+13. **Revenue:** receita calculada e acompanhada via `VIEW revenue_by_loan` e `loan_fees`.
 
 ---
 
@@ -137,7 +150,10 @@ Cadastro / Onboarding
 
 ## 6. Diagrama Entidade-Relacionamento (ERD)
 
+### 6.1 Núcleo (Users, Institutions, Loans, Offers, Matches, Ledger)
+
 ```mermaid
+%%{init: {"fontSize": 14}}%%
 erDiagram
     USERS {
         int id PK
@@ -212,36 +228,6 @@ erDiagram
         timestamp created_at
     }
 
-    FRAUDS {
-        int id PK
-        int user_id FK
-        text type
-        int severity
-        jsonb payload
-        timestamp created_at
-    }
-
-    SCORES {
-        int id PK
-        int user_id FK
-        int score
-        text risk_band
-        jsonb reason_json
-        timestamp created_at
-    }
-
-    ACADEMIC_PERFORMANCE {
-        int id PK
-        int user_id FK
-        int school_id FK
-        text period
-        numeric grade_avg
-        numeric attendance_pct
-        text status
-        jsonb meta
-        timestamp created_at
-    }
-
     LOAN_FEES {
         int id PK
         int loan_id FK
@@ -257,15 +243,133 @@ erDiagram
 
     USERS ||--o{ LOANS : "borrows"
     USERS ||--o{ OFFERS : "creates"
-    USERS ||--o{ FRAUDS : "generates"
-    USERS ||--o{ SCORES : "generates"
     USERS ||--o{ LEDGER : "has_account"
-    USERS ||--o{ ACADEMIC_PERFORMANCE : "has_performance"
     INSTITUTIONS ||--o{ LOANS : "receives"
-    INSTITUTIONS ||--o{ ACADEMIC_PERFORMANCE : "tracks"
     LOANS ||--o{ MATCHES : "matches_with"
     OFFERS ||--o{ MATCHES : "matches_with"
     LOANS ||--o{ LOAN_FEES : "generates_fees"
+```
+
+### 6.2 Pagamentos (Installments, Payment Methods, Transactions, Schedules, Plans)
+
+```mermaid
+%%{init: {"fontSize": 14}}%%
+erDiagram
+    INSTALLMENTS {
+        int id PK
+        int loan_id FK
+        int number
+        numeric amount
+        numeric principal_amount
+        numeric interest_amount
+        date due_date
+        text status
+        date payment_date
+        numeric paid_amount
+        text payment_phase
+        boolean is_symbolic
+        numeric symbolic_amount
+        numeric investor_share
+        numeric qi_edu_fee_share
+        text payment_method
+        text transaction_id
+        int ledger_entry_id FK
+        timestamp created_at
+    }
+
+    PAYMENT_METHODS {
+        int id PK
+        int user_id FK
+        text type
+        text identifier
+        boolean is_active
+        boolean is_default
+        jsonb meta
+        timestamp created_at
+    }
+
+    PAYMENT_TRANSACTIONS {
+        int id PK
+        int installment_id FK
+        int payment_method_id FK
+        numeric amount
+        text status
+        text external_transaction_id
+        numeric fees
+        numeric net_amount
+        jsonb meta
+        timestamp processed_at
+        timestamp created_at
+    }
+
+    LOAN_PAYMENT_SCHEDULES {
+        int id PK
+        int loan_id FK
+        text schedule_type
+        int total_installments
+        numeric monthly_payment
+        date first_payment_date
+        date last_payment_date
+        boolean is_active
+    }
+
+    PAYMENT_PLANS {
+        int id PK
+        int loan_id FK
+        text plan_type
+        text payment_timing
+        jsonb installments_list
+        timestamp created_at
+    }
+
+    LOANS ||--o{ INSTALLMENTS : "has"
+    INSTALLMENTS ||--o{ PAYMENT_TRANSACTIONS : "has"
+    USERS ||--o{ PAYMENT_METHODS : "has"
+    PAYMENT_METHODS ||--o{ PAYMENT_TRANSACTIONS : "used_in"
+    LOANS ||--o{ LOAN_PAYMENT_SCHEDULES : "schedules"
+    LOANS ||--o{ PAYMENT_PLANS : "has"
+```
+
+### 6.3 Custódia (Accounts, Transactions, Payment Ledger)
+
+```mermaid
+%%{init: {"fontSize": 14}}%%
+erDiagram
+    CUSTODY_ACCOUNTS {
+        int id PK
+        int user_id FK
+        text account_number
+        numeric balance
+        text email
+        text phone
+        text status
+    }
+
+    CUSTODY_TRANSACTIONS {
+        int id PK
+        int custody_account_id FK
+        numeric amount
+        text payment_method
+        text transaction_type
+        text category
+        text subcategory
+        text description
+        text status
+        timestamp created_at
+    }
+
+    PAYMENT_LEDGER {
+        int id PK
+        numeric amount
+        text category
+        text subcategory
+        text ref
+        jsonb meta
+        timestamp created_at
+    }
+
+    USERS ||--o{ CUSTODY_ACCOUNTS : "owns"
+    CUSTODY_ACCOUNTS ||--o{ CUSTODY_TRANSACTIONS : "has"
 ```
 
 ## 7. Tecnologias e justificativa
@@ -284,16 +388,16 @@ erDiagram
 
 ### Funções PL/pgSQL
 
-**Funções Core:**
+**Funções Core (atuais):**
 
 - `ledger_transfer()`: transferências de dupla entrada
 - `match_loan()`: matching automático de empréstimos e ofertas
-- `create_institution_user()`: criação de usuários sistema para instituições
-- `create_custody_for_loan()`: criação de usuários custódia
-- `recompute_score_for_user()`: recálculo de score baseado em performance acadêmica e fraudes
-- `release_to_institution()`: liberação de recursos para instituições
+- `create_institution_user()`: criação de usuário sistema para instituição
+- `create_custody_for_loan()`: criação de usuário de custódia por empréstimo
+- `recompute_score_for_user()`: recálculo de score (acadêmico + antifraude)
+- `release_to_institution()`: liberação de recursos para instituição
 
-**Funções de Monetização:**
+**Funções de Monetização (atuais):**
 
 - `ensure_platform_user()`: criação de usuário plataforma
 - `compute_revenue_first_year()`: cálculo de receita do primeiro ano
@@ -330,17 +434,24 @@ erDiagram
 
 **`balances`:**
 
-- Consulta de saldo por usuário isolando lógica contábil da aplicação
-- Calcula automaticamente créditos menos débitos por usuário
+- Consulta de saldo por usuário isolando lógica contábil
+- Calcula créditos menos débitos por usuário
+
+**`view_user_loans`:**
+
+- Lista de empréstimos por usuário com status e ticket
+
+**`view_loan_matches`:**
+
+- Relaciona empréstimos com seus matches e investidores
 
 **`revenue_by_loan`:**
 
-- Consulta de receita por empréstimo
-- Mostra ticket, receita projetada (primeiro ano) e receita realizada (taxas cobradas)
+- Receita por empréstimo: ticket, receita projetada (1º ano) e realizada
 
 ### Ferramentas auxiliares
 
-- **Render:** deploy rápido do PostgreSQL.
+- **Render/Heroku/Cloud:** deploy do PostgreSQL.
 - **DBeaver:** gerenciamento visual do banco.
 - **Knex.js:** migrations e seeds para versão e populamento do banco.
 - **GitHub Actions:** CI para migrations e seeds automáticas.
@@ -349,7 +460,7 @@ erDiagram
 ### Segurança e conformidade
 
 - Conexão TLS/SSL entre app e DB.
-- Hash de senhas (bcrypt/argon2).
+- Hash de senhas (bcrypt).
 - Sanitização e validação de inputs (SQLi/XSS).
 - Histórico append-only (`frauds`, `scores`, `ledger`).
 
@@ -398,17 +509,13 @@ npm run db:test
 npm run db:reset
 ```
 
-### Estrutura de Teste
+### Estrutura de Verificação
 
-O sistema inclui um script de teste (`test-db.js`) que verifica:
+Para conferir o ambiente rapidamente:
 
-1. **📋 Tabelas:** Confirma que todas as 10 tabelas foram criadas
-2. **👁️ Views:** Verifica as 4 views (`balances`, `revenue_by_loan`, `view_user_loans`, `view_loan_matches`)
-3. **⚙️ Funções:** Confirma as 15 funções PostgreSQL estão funcionais
-4. **📊 Dados:** Conta registros em cada tabela principal
-5. **💳 Balances:** Testa cálculo de saldos por usuário
-6. **💵 Revenue:** Verifica cálculo de receita por empréstimo
-7. **🔧 Funções:** Testa funções críticas como `recompute_score_for_user()` e `ensure_platform_user()`
+1. Rodar migrations e seeds (`server/`): `npm run db:reset`
+2. Conferir views criadas: `balances`, `view_user_loans`, `view_loan_matches`, `revenue_by_loan`
+3. Executar funções chave manualmente (SQL) se necessário, como `match_loan()` e `release_to_institution()`
 
 ### Fluxo de Demonstração
 

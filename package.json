@@ -1,18 +1,35 @@
 {
-  "scripts": {
-    "migrate:latest": "knex migrate:latest",
-    "migrate:rollback": "knex migrate:rollback",
-    "migrate:status": "knex migrate:status",
-    "seed:run": "knex seed:run",
-    "db:reset": "knex migrate:rollback --all && knex migrate:latest && knex seed:run",
-    "db:test": "knex migrate:latest && knex seed:run && node test-db.js"
-  },
-  "dependencies": {
-    "dotenv": "^17.2.3",
-    "knex": "^3.1.0",
-    "pg": "^8.16.3"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.10"
-  }
+    "name": "qitech-platform",
+    "version": "1.0.0",
+    "description": "QI-EDU - Plataforma de Financiamento Educacional P2P",
+    "main": "start-all-services.js",
+    "scripts": {
+        "start": "node start-all-services.js",
+        "start:server": "cd server && npm start",
+        "start:payment": "cd services/payment-api && npm start",
+        "start:score": "cd services/score-engine && npm start",
+        "start:faculty": "cd services/faculty-api && npm start",
+        "dev": "node start-all-services.js",
+        "test:integration": "cd server && npm run test:integration",
+        "install:all": "npm install && cd server && npm install && cd ../services/payment-api && npm install && cd ../score-engine && npm install && cd ../faculty-api && npm install",
+        "setup": "npm run install:all && cd server && npm run db:reset",
+        "create:env": "node create-env.js"
+    },
+    "keywords": [
+        "fintech",
+        "education",
+        "p2p",
+        "loans",
+        "financing",
+        "qi-edu"
+    ],
+    "author": "QI-EDU Team",
+    "license": "MIT",
+    "engines": {
+        "node": ">=16.0.0",
+        "npm": ">=8.0.0"
+    },
+    "dependencies": {
+        "dotenv": "^17.2.3"
+    }
 }

@@ -1,0 +1,5 @@
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[CUSTODY-SERVICE] Conta não encontrada no banco, criando automaticamente: user_99\u001b[39m","timestamp":"2025-10-04 16:42:30"}
+{"initialBalance":0,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[CUSTODY-SERVICE] Conta de custódia criada no banco\u001b[39m","timestamp":"2025-10-04 16:42:31","userId":99,"userType":"user"}
+{"amount":50,"category":"payment","entryId":"LEDGER_MGCPM2S4_7ECD2","fromAccount":"user_10","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] Ledger entry saved to database\u001b[39m","timestamp":"2025-10-04 17:12:24"}
+{"amount":50,"entryId":"LEDGER_MGCPM2S4_7ECD2","fromAccount":"user_10","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] Ledger entry created\u001b[39m","timestamp":"2025-10-04 17:12:24","toAccount":"user_6"}
+{"amount":0.1,"category":"fee","entryId":"LEDGER_MGCPM4BU_DIPSW","fromAccount":"user_10","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[LEDGER-SERVICE] Ledger entry saved to database\u001b[39m","timestamp":"2025-10-04 17:12:24"}
