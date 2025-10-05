@@ -735,3 +735,4 @@
 {"level":"\u001b[33mwarn\u001b[39m","message":"\u001b[33m[ACADEMIC-CALCULATOR] Nenhum dado acadêmico encontrado para usuário 9, usando dados padrão\u001b[39m","timestamp":"2025-10-05 01:28:28"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[ACADEMIC-CALCULATOR] Score acadêmico calculado: 78.7 para usuário 9\u001b[39m","timestamp":"2025-10-05 01:28:28"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[SCORE-ENGINE] QI-EDU Score Engine rodando na porta 3003\u001b[39m","timestamp":"2025-10-05 02:24:15"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32m[SCORE-ENGINE] QI-EDU Score Engine rodando na porta 3003\u001b[39m","timestamp":"2025-10-05 06:14:42"}

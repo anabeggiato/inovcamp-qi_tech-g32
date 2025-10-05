@@ -14,7 +14,7 @@ npx knex seed:run --specific=006_payment_api_test_data.js
 
 ### 3. Iniciar API
 ```bash
-cd src/apis-mock/payment-api
+cd services/payment-api
 node server.js
 ```
 
