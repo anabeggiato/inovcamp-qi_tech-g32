@@ -19,7 +19,7 @@ export default function Hero() {
             </div>
 
             <div className='flex space-x-5 mt-16'>
-                <CardHero title="R$ 50M +" subtitle="Financiados" />
+                <CardHero title="R$50M+" subtitle="Financiados" />
                 <CardHero title="10K+" subtitle="Estudantes Apoiados" />
                 <CardHero title="98%" subtitle="Taxa de Retorno" />
             </div>
